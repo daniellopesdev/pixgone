@@ -5,7 +5,6 @@ import io
 import time
 import os
 import sys
-import numpy as np
 
 print("=== Starting PixGone Server ===")
 print(f"Python version: {sys.version}")
@@ -35,19 +34,6 @@ def try_import_ormbg():
         return None
     except Exception as e:
         print(f"❌ ormbg error: {e}")
-        return None
-
-def try_import_bria_rmbg():
-    """Try to import Bria RMBG1.4, return None if failed"""
-    try:
-        from transformers import pipeline
-        print("✅ Bria RMBG1.4 pipeline imported successfully")
-        return pipeline("image-segmentation", model="briaai/RMBG-1.4", trust_remote_code=True)
-    except ImportError as e:
-        print(f"❌ Bria RMBG1.4 import failed: {e}")
-        return None
-    except Exception as e:
-        print(f"❌ Bria RMBG1.4 error: {e}")
         return None
 
 def simple_background_removal(image):
@@ -80,8 +66,8 @@ def simple_background_removal(image):
         return image.convert('RGBA')
 
 @app.post("/remove_background/")
-async def remove_background(file: UploadFile = File(...), method: str = Form(default="ormbg")):
-    print(f"🔄 Processing request with method: {method}")
+async def remove_background(file: UploadFile = File(...)):
+    print("🔄 Processing background removal request")
     try:
         # Validate file
         if not file.content_type or not file.content_type.startswith('image/'):
@@ -92,62 +78,25 @@ async def remove_background(file: UploadFile = File(...), method: str = Form(def
             raise HTTPException(status_code=400, detail="Empty file")
         
         image = Image.open(io.BytesIO(image_data)).convert('RGB')
-        print(f"Processing image: {image.size} with method: {method}")
+        print(f"Processing image: {image.size}")
         
         start_time = time.time()
         
-        # Try the selected method
-        if method == "ormbg":
-            remove_func = try_import_ormbg()
-            if remove_func:
-                try:
-                    print("Using ormbg for background removal")
-                    no_bg_image = remove_func(image)
-                    process_time = time.time() - start_time
-                    print(f"ormbg completed in {process_time:.2f} seconds")
-                except Exception as e:
-                    print(f"ormbg failed: {e}, falling back to simple method")
-                    no_bg_image = simple_background_removal(image)
-                    process_time = time.time() - start_time
-                    print(f"Simple method completed in {process_time:.2f} seconds")
-            else:
-                print("ormbg not available, using simple method")
+        # Try ormbg first
+        remove_func = try_import_ormbg()
+        if remove_func:
+            try:
+                print("Using ormbg for background removal")
+                no_bg_image = remove_func(image)
+                process_time = time.time() - start_time
+                print(f"ormbg completed in {process_time:.2f} seconds")
+            except Exception as e:
+                print(f"ormbg failed: {e}, falling back to simple method")
                 no_bg_image = simple_background_removal(image)
                 process_time = time.time() - start_time
                 print(f"Simple method completed in {process_time:.2f} seconds")
-        
-        elif method == "bria_rmbg":
-            bria_pipeline = try_import_bria_rmbg()
-            if bria_pipeline:
-                try:
-                    print("Using Bria RMBG1.4 for background removal")
-                    # Convert PIL image to bytes for the pipeline
-                    img_byte_arr = io.BytesIO()
-                    image.save(img_byte_arr, format='PNG')
-                    img_byte_arr = img_byte_arr.getvalue()
-                    
-                    # Get mask from Bria
-                    mask = bria_pipeline(img_byte_arr, return_mask=True)
-                    
-                    # Apply mask to create transparent background
-                    no_bg_image = image.copy()
-                    no_bg_image.putalpha(mask)
-                    
-                    process_time = time.time() - start_time
-                    print(f"Bria RMBG1.4 completed in {process_time:.2f} seconds")
-                except Exception as e:
-                    print(f"Bria RMBG1.4 failed: {e}, falling back to simple method")
-                    no_bg_image = simple_background_removal(image)
-                    process_time = time.time() - start_time
-                    print(f"Simple method completed in {process_time:.2f} seconds")
-            else:
-                print("Bria RMBG1.4 not available, using simple method")
-                no_bg_image = simple_background_removal(image)
-                process_time = time.time() - start_time
-                print(f"Simple method completed in {process_time:.2f} seconds")
-        
         else:
-            # Use simple background removal as fallback
+            # Use simple background removal
             print("Using simple background removal algorithm")
             no_bg_image = simple_background_removal(image)
             process_time = time.time() - start_time

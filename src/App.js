@@ -2,7 +2,6 @@ import React, { useState, useRef } from 'react';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import ColorPicker from './components/ColorPicker';
-import MethodSelector from './components/MethodSelector';
 import './App.css';
 
 function App() {
@@ -12,7 +11,6 @@ function App() {
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState('');
   const [backgroundColor, setBackgroundColor] = useState('#ffffff');
-  const [selectedMethod, setSelectedMethod] = useState('');
   const fileInputRef = useRef(null);
   const progressInterval = useRef(null);
 
@@ -22,7 +20,6 @@ function App() {
       setSelectedFile(file);
       setError('');
       setProcessedImage(null);
-      setSelectedMethod('');
     } else {
       setError('Please select a valid image file.');
     }
@@ -35,7 +32,6 @@ function App() {
       setSelectedFile(file);
       setError('');
       setProcessedImage(null);
-      setSelectedMethod('');
     } else {
       setError('Please drop a valid image file.');
     }
@@ -46,8 +42,8 @@ function App() {
   };
 
   const processImage = async () => {
-    if (!selectedFile || !selectedMethod) {
-      setError('Please select an image and a method.');
+    if (!selectedFile) {
+      setError('Please select an image first.');
       return;
     }
 
@@ -65,7 +61,6 @@ function App() {
 
     const formData = new FormData();
     formData.append('file', selectedFile);
-    formData.append('method', selectedMethod);
 
     try {
       const response = await fetch(`${process.env.REACT_APP_API_URL || 'https://pixgone-production.up.railway.app'}/remove_background/`, {
@@ -106,7 +101,6 @@ function App() {
     setSelectedFile(null);
     setProcessedImage(null);
     setError('');
-    setSelectedMethod('');
     setProgress(0);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -150,16 +144,12 @@ function App() {
             </div>
 
             {selectedFile && (
-              <div className="file-info file-info-row">
+              <div className="file-info">
                 <p>Selected: {selectedFile.name}</p>
-                <MethodSelector
-                  selectedMethod={selectedMethod}
-                  onMethodChange={setSelectedMethod}
-                />
                 <button
                   className="process-btn"
                   onClick={processImage}
-                  disabled={isProcessing || !selectedFile || !selectedMethod}
+                  disabled={isProcessing}
                 >
                   {isProcessing ? 'Processing...' : 'Remove Background'}
                 </button>
