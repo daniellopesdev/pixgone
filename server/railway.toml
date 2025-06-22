@@ -8,4 +8,5 @@ healthcheckTimeout = 300
 restartPolicyType = "on_failure"
 
 [variables]
-PYTHONPATH = "/app" 
+PYTHONPATH = "/app"
+PORT = "8080" 
