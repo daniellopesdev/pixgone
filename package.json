@@ -24,15 +24,15 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "concurrently \"set PORT=9877 && set NODE_OPTIONS=--max-old-space-size=4096 && react-scripts start\" \"cd server && run.bat\"",
-    "build": "set NODE_OPTIONS=--max-old-space-size=4096 && react-scripts build",
+    "start": "concurrently \"set PORT=9877 && set NODE_OPTIONS=--max-old-space-size=8192 && react-scripts start\" \"cd server && run.bat\"",
+    "build": "set NODE_OPTIONS=--max-old-space-size=8192 && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "deploy": "npm run build && wrangler pages deploy ./build",
     "preview": "npm run build && wrangler pages dev ./build",
     "start-server": "cd server && run.bat",
     "setup-server": "cd server && setup.bat",
-    "start-client": "set PORT=9877 && set NODE_OPTIONS=--max-old-space-size=4096 && react-scripts start"
+    "start-client": "set PORT=9877 && set NODE_OPTIONS=--max-old-space-size=8192 && react-scripts start"
   },
   "eslintConfig": {
     "extends": [
@@ -54,6 +54,7 @@
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
-    "wrangler": "^3.63.1"
+    "wrangler": "^3.63.1",
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
   }
 }

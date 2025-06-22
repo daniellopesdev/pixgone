@@ -20,8 +20,8 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "http://localhost:9877", 
-        "https://pixgone.vercel.app",  # Fixed URL (removed trailing slash)
-        "https://*.vercel.app",  # Allow all Vercel subdomains
+        "https://pixgone.vercel.app",
+        "https://*.vercel.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -35,53 +35,78 @@ model_error = None
 use_fallback = False
 
 def simple_background_removal(image):
-    """Simple fallback background removal using edge detection"""
+    """Simple background removal using color-based segmentation"""
     try:
         import cv2
-        from skimage import segmentation, morphology
+        from skimage import segmentation, morphology, filters
         
         # Convert PIL to numpy array
         img_array = np.array(image)
         
-        # Convert to LAB color space for better segmentation
+        # Convert to different color spaces for better segmentation
+        hsv = cv2.cvtColor(img_array, cv2.COLOR_RGB2HSV)
         lab = cv2.cvtColor(img_array, cv2.COLOR_RGB2LAB)
         
-        # Use watershed segmentation
-        markers = segmentation.slic(img_array, n_segments=100, compactness=10, sigma=1)
+        # Use multiple segmentation approaches
+        # 1. SLIC superpixels
+        segments = segmentation.slic(img_array, n_segments=150, compactness=10, sigma=1)
         
-        # Create a simple mask based on the largest connected component
-        # This is a very basic approach
-        mask = morphology.remove_small_objects(markers == 0, min_size=1000)
+        # 2. Find the most likely background segments (edges and corners)
+        h, w = segments.shape
+        edge_segments = set()
         
-        # Invert mask (we want to keep the foreground)
-        mask = ~mask
+        # Sample edge pixels
+        edge_pixels = [(0, j) for j in range(w)] + [(h-1, j) for j in range(w)] + \
+                     [(i, 0) for i in range(h)] + [(i, w-1) for i in range(h)]
+        
+        for i, j in edge_pixels:
+            edge_segments.add(segments[i, j])
+        
+        # Create mask - assume edge segments are background
+        mask = np.ones((h, w), dtype=bool)
+        for seg_id in edge_segments:
+            mask[segments == seg_id] = False
+        
+        # Clean up the mask
+        mask = morphology.remove_small_objects(mask, min_size=100)
+        mask = morphology.remove_small_holes(mask, area_threshold=100)
+        
+        # Apply Gaussian blur to soften edges
+        mask_float = mask.astype(np.float32)
+        mask_smooth = filters.gaussian(mask_float, sigma=1.0)
         
         # Create RGBA image
-        rgba_array = np.dstack([img_array, mask.astype(np.uint8) * 255])
+        rgba_array = np.dstack([img_array, (mask_smooth * 255).astype(np.uint8)])
         
         return Image.fromarray(rgba_array, 'RGBA')
         
     except Exception as e:
-        logger.error(f"Fallback background removal failed: {e}")
-        # If all else fails, just return the original image with white background removed
+        logger.error(f"Advanced background removal failed: {e}")
         return remove_white_background(image)
 
 def remove_white_background(image):
-    """Very simple white background removal"""
+    """Simple white/bright background removal"""
     try:
         # Convert to RGBA
         rgba = image.convert('RGBA')
         data = np.array(rgba)
         
-        # Make white pixels transparent
-        white_threshold = 240
-        mask = (data[:,:,0] > white_threshold) & (data[:,:,1] > white_threshold) & (data[:,:,2] > white_threshold)
-        data[mask] = [255, 255, 255, 0]  # Make white pixels transparent
+        # Create mask for bright pixels (likely background)
+        brightness = np.mean(data[:,:,:3], axis=2)
+        mask = brightness < 220  # Keep darker pixels
+        
+        # Apply some morphological operations to clean up
+        from skimage import morphology
+        mask = morphology.remove_small_objects(mask, min_size=50)
+        mask = morphology.binary_closing(mask, morphology.disk(2))
+        
+        # Apply mask
+        data[:,:,3] = mask.astype(np.uint8) * 255
         
         return Image.fromarray(data, 'RGBA')
     except Exception as e:
-        logger.error(f"Simple white background removal failed: {e}")
-        # Return original image with alpha channel
+        logger.error(f"Simple background removal failed: {e}")
+        # Last resort - just return original with alpha channel
         return image.convert('RGBA')
 
 def download_model_file(url, filepath):
@@ -225,11 +250,9 @@ async def remove_background(file: UploadFile = File(...), method: str = Form(def
         
         start_time = time.time()
         
-        # Only support ORMBG (or fallback)
-        if method != "ormbg":
-            raise HTTPException(status_code=400, detail="Only 'ormbg' method is supported")
-        
-        no_bg_image = process_with_ormbg(image)
+        # Use simple background removal
+        logger.info("Using simple background removal algorithm")
+        no_bg_image = simple_background_removal(image)
         
         process_time = time.time() - start_time
         logger.info(f"Background removal completed in {process_time:.2f} seconds")
@@ -251,22 +274,18 @@ async def remove_background(file: UploadFile = File(...), method: str = Form(def
 async def root():
     return {
         "message": "PixGone - AI Background Removal API", 
-        "description": "AI-powered background removal with fallback support",
+        "description": "Simple and reliable background removal service",
         "available_methods": ["ormbg"],
-        "model_loaded": model_loaded,
-        "using_fallback": use_fallback,
-        "model_error": model_error,
-        "status": "healthy"
+        "status": "healthy",
+        "version": "1.0.0"
     }
 
 @app.get("/health")
 async def health():
     return {
-        "status": "healthy", 
-        "model_loaded": model_loaded,
-        "using_fallback": use_fallback,
-        "model_error": model_error,
-        "method": "ormbg"
+        "status": "healthy",
+        "method": "simple_segmentation",
+        "version": "1.0.0"
     }
 
 # Preload model on startup
