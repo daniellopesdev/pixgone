@@ -37,7 +37,7 @@ async def health():
 
 if __name__ == "__main__":
     import uvicorn
-    port = int(os.environ.get("PORT", 8000))
+    port = int(os.environ.get("PORT", 8080))  # Default to 8080 to match Railway domain
     logger.info(f"Environment PORT: {os.environ.get('PORT', 'Not set')}")
     logger.info(f"Using port: {port}")
     logger.info(f"Starting PixGone Minimal Server on 0.0.0.0:{port}...")
