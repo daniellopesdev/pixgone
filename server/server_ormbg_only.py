@@ -26,14 +26,33 @@ print("✅ CORS middleware configured")
 def try_import_ormbg():
     """Try to import ormbg, return None if failed"""
     try:
-        from rembg import remove
+        from rembg import remove, new_session
         print("✅ ormbg imported successfully")
-        return remove
+        
+        # Create a session with better model configuration
+        session = new_session("u2net")
+        print("✅ ormbg session created with u2net model")
+        
+        return lambda img: remove(img, session=session)
     except ImportError as e:
         print(f"❌ ormbg import failed: {e}")
         return None
     except Exception as e:
         print(f"❌ ormbg error: {e}")
+        return None
+
+def try_import_custom_ormbg():
+    """Try to import custom ORMBG implementation"""
+    try:
+        from ormbg import ORMBGProcessor
+        print("✅ Custom ORMBG imported successfully")
+        processor = ORMBGProcessor()
+        return processor.process_image
+    except ImportError as e:
+        print(f"❌ Custom ORMBG import failed: {e}")
+        return None
+    except Exception as e:
+        print(f"❌ Custom ORMBG error: {e}")
         return None
 
 def simple_background_removal(image):
@@ -82,25 +101,52 @@ async def remove_background(file: UploadFile = File(...)):
         
         start_time = time.time()
         
-        # Try ormbg first
-        remove_func = try_import_ormbg()
-        if remove_func:
+        # Try custom ORMBG first (original implementation)
+        custom_remove_func = try_import_custom_ormbg()
+        if custom_remove_func:
             try:
-                print("Using ormbg for background removal")
-                no_bg_image = remove_func(image)
+                print("Using custom ORMBG for background removal")
+                no_bg_image = custom_remove_func(image)
                 process_time = time.time() - start_time
-                print(f"ormbg completed in {process_time:.2f} seconds")
+                print(f"Custom ORMBG completed in {process_time:.2f} seconds")
             except Exception as e:
-                print(f"ormbg failed: {e}, falling back to simple method")
+                print(f"Custom ORMBG failed: {e}, trying standard ormbg")
+                # Fall back to standard ormbg
+                remove_func = try_import_ormbg()
+                if remove_func:
+                    try:
+                        no_bg_image = remove_func(image)
+                        process_time = time.time() - start_time
+                        print(f"Standard ormbg completed in {process_time:.2f} seconds")
+                    except Exception as e2:
+                        print(f"Standard ormbg failed: {e2}, using simple method")
+                        no_bg_image = simple_background_removal(image)
+                        process_time = time.time() - start_time
+                        print(f"Simple method completed in {process_time:.2f} seconds")
+                else:
+                    no_bg_image = simple_background_removal(image)
+                    process_time = time.time() - start_time
+                    print(f"Simple method completed in {process_time:.2f} seconds")
+        else:
+            # Try standard ormbg
+            remove_func = try_import_ormbg()
+            if remove_func:
+                try:
+                    print("Using standard ormbg for background removal")
+                    no_bg_image = remove_func(image)
+                    process_time = time.time() - start_time
+                    print(f"Standard ormbg completed in {process_time:.2f} seconds")
+                except Exception as e:
+                    print(f"Standard ormbg failed: {e}, using simple method")
+                    no_bg_image = simple_background_removal(image)
+                    process_time = time.time() - start_time
+                    print(f"Simple method completed in {process_time:.2f} seconds")
+            else:
+                # Use simple background removal
+                print("Using simple background removal algorithm")
                 no_bg_image = simple_background_removal(image)
                 process_time = time.time() - start_time
-                print(f"Simple method completed in {process_time:.2f} seconds")
-        else:
-            # Use simple background removal
-            print("Using simple background removal algorithm")
-            no_bg_image = simple_background_removal(image)
-            process_time = time.time() - start_time
-            print(f"Background removal completed in {process_time:.2f} seconds")
+                print(f"Background removal completed in {process_time:.2f} seconds")
         
         # Convert to PNG
         with io.BytesIO() as output:

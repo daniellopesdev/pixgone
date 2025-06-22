@@ -168,11 +168,6 @@ function App() {
 
           {processedImage && (
             <div className="results-section">
-              <ColorPicker 
-                onColorChange={setBackgroundColor} 
-                currentColor={backgroundColor} 
-              />
-              
               <div className="image-comparison">
                 <div className="image-container">
                   <h3>Original</h3>
@@ -193,6 +188,10 @@ function App() {
                       src={processedImage} 
                       alt="Processed" 
                       className="preview-image"
+                    />
+                    <ColorPicker 
+                      onColorChange={setBackgroundColor} 
+                      currentColor={backgroundColor} 
                     />
                   </div>
                 </div>
