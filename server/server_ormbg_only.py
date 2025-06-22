@@ -10,12 +10,17 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="ORMBG Background Removal API", version="1.0.0")
+app = FastAPI(title="PixGone", version="1.0.0")
 
-# Add CORS middleware
+# Add CORS middleware - Updated for production
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:9877", 
+        "https://pixgone.vercel.app/",  # Replace with your actual Vercel URL
+        "https://*.vercel.app",  # Allow all Vercel subdomains
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -32,19 +37,28 @@ def load_ormbg_model():
             import torch
             from ormbg import ORMBGProcessor
             
+            # Railway will download the model during deployment
             ormbg_model_path = os.path.expanduser("~/.ormbg/ormbg.pth")
+            
+            # Create directory if it doesn't exist
+            os.makedirs(os.path.dirname(ormbg_model_path), exist_ok=True)
+            
+            # Download model if not exists
             if not os.path.exists(ormbg_model_path):
-                raise FileNotFoundError(f"ORMBG model file not found: {ormbg_model_path}. Please run setup first.")
+                logger.info("Downloading ORMBG model...")
+                import requests
+                model_url = "https://huggingface.co/schirrmacher/ormbg/resolve/main/models/ormbg.pth"
+                response = requests.get(model_url)
+                with open(ormbg_model_path, 'wb') as f:
+                    f.write(response.content)
+                logger.info("ORMBG model downloaded successfully")
             
             logger.info("Loading ORMBG model...")
             ormbg_processor = ORMBGProcessor(ormbg_model_path)
             
-            if torch.cuda.is_available():
-                ormbg_processor.to("cuda")
-                logger.info("ORMBG model loaded on GPU")
-            else:
-                ormbg_processor.to("cpu")
-                logger.info("ORMBG model loaded on CPU")
+            # Use CPU for Railway (GPU is expensive)
+            ormbg_processor.to("cpu")
+            logger.info("ORMBG model loaded on CPU")
                 
             model_loaded = True
             logger.info("ORMBG model loaded successfully")
@@ -91,7 +105,8 @@ async def root():
         "message": "ORMBG Background Removal API", 
         "description": "Minimal API for background removal using Open RMBG",
         "available_methods": ["ormbg"],
-        "model_loaded": model_loaded
+        "model_loaded": model_loaded,
+        "status": "healthy"
     }
 
 @app.get("/health")
@@ -104,5 +119,6 @@ async def health():
 
 if __name__ == "__main__":
     import uvicorn
-    logger.info("Starting ORMBG Background Removal Server...")
-    uvicorn.run(app, host="0.0.0.0", port=9876) 
+    port = int(os.environ.get("PORT", 8000))
+    logger.info(f"Starting ORMBG Background Removal Server on port {port}...")
+    uvicorn.run(app, host="0.0.0.0", port=port) 
