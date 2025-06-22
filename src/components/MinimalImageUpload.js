@@ -9,11 +9,14 @@ import {
   Fade,
   Slide,
   alpha,
+  Container,
 } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import axios from 'axios';
+import { ResponsiveAd, BannerAd } from './AdBanner';
 
 const MinimalImageUpload = ({ showErrorToast }) => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -26,13 +29,25 @@ const MinimalImageUpload = ({ showErrorToast }) => {
   const dropZoneRef = useRef(null);
   const fileInputRef = useRef(null);
 
+  // Use environment variable for API URL (for production deployment)
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:9876';
+  
+  // Ensure HTTPS for Railway production
+  const getSecureURL = (url) => {
+    if (url.includes('railway.app') && url.startsWith('http://')) {
+      return url.replace('http://', 'https://');
+    }
+    return url;
+  };
+
   const processFile = useCallback(async (file) => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('method', 'ormbg');
     
     try {
-      const response = await axios.post('http://localhost:9876/remove_background/', formData, {
+      const secureURL = getSecureURL(API_URL);
+      const response = await axios.post(`${secureURL}/remove_background/`, formData, {
         responseType: 'blob',
         withCredentials: false,
       });
@@ -46,7 +61,7 @@ const MinimalImageUpload = ({ showErrorToast }) => {
       showErrorToast('Error processing image. Please try again.');
     }
     return null;
-  }, [showErrorToast]);
+  }, [showErrorToast, API_URL]);
 
   const handleFileUpload = useCallback(async (file) => {
     if (!file || !file.type.startsWith('image/')) {
@@ -97,7 +112,7 @@ const MinimalImageUpload = ({ showErrorToast }) => {
     
     const link = document.createElement('a');
     link.href = processedFile;
-    link.download = `${originalFilename.split('.')[0]}_no_bg.png`;
+    link.download = `${originalFilename.split('.')[0]}_pixgone.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -114,11 +129,14 @@ const MinimalImageUpload = ({ showErrorToast }) => {
   };
 
   return (
-    <Box sx={{ maxWidth: 800, mx: 'auto', p: 3 }}>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      {/* Top Banner Ad */}
+      <ResponsiveAd slot="TOP_BANNER_SLOT" />
+      
       {/* Header */}
       <Box sx={{ textAlign: 'center', mb: 4 }}>
         <Typography 
-          variant="h3" 
+          variant="h2" 
           component="h1" 
           sx={{ 
             fontWeight: 700,
@@ -126,217 +144,291 @@ const MinimalImageUpload = ({ showErrorToast }) => {
             backgroundClip: 'text',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
-            mb: 1
+            mb: 1,
+            fontSize: { xs: '2.5rem', md: '3.5rem' }
           }}
         >
-          ORMBG
+          PixGone
         </Typography>
-        <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 300 }}>
-          AI-Powered Background Removal
+        <Typography 
+          variant="h5" 
+          color="text.secondary" 
+          sx={{ 
+            fontWeight: 300,
+            mb: 2,
+            fontSize: { xs: '1.1rem', md: '1.3rem' }
+          }}
+        >
+          Free AI Background Removal Tool
+        </Typography>
+        <Typography 
+          variant="body1" 
+          color="text.secondary" 
+          sx={{ 
+            maxWidth: 600,
+            mx: 'auto',
+            mb: 3
+          }}
+        >
+          Remove backgrounds from your images instantly with our AI-powered tool. 
+          Perfect for e-commerce, social media, and professional photography.
         </Typography>
       </Box>
 
-      {/* Upload Area */}
-      {!selectedFile && (
-        <Fade in={!selectedFile}>
-          <Paper
-            ref={dropZoneRef}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            onClick={() => fileInputRef.current?.click()}
-            sx={{
-              border: `2px dashed ${dragOver ? theme.palette.primary.main : theme.palette.divider}`,
-              borderRadius: 3,
-              p: 6,
-              textAlign: 'center',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              backgroundColor: dragOver 
-                ? alpha(theme.palette.primary.main, 0.04)
-                : alpha(theme.palette.background.paper, 0.8),
-              backdropFilter: 'blur(10px)',
-              '&:hover': {
-                borderColor: theme.palette.primary.main,
-                backgroundColor: alpha(theme.palette.primary.main, 0.04),
-                transform: 'translateY(-2px)',
-                boxShadow: theme.shadows[4],
-              }
-            }}
-          >
-            <CloudUploadIcon 
-              sx={{ 
-                fontSize: 64, 
-                color: theme.palette.primary.main,
-                mb: 2,
-                opacity: 0.8
-              }} 
-            />
-            <Typography variant="h5" sx={{ mb: 1, fontWeight: 500 }}>
-              {dragOver ? 'Drop your image here' : 'Upload an image'}
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
-              Drag & drop or click to select • PNG, JPG, JPEG
-            </Typography>
-            
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              style={{ display: 'none' }}
-              onChange={handleFileSelect}
-            />
-          </Paper>
-        </Fade>
-      )}
-
-      {/* Processing/Results Area */}
-      {selectedFile && (
-        <Slide direction="up" in={Boolean(selectedFile)}>
-          <Box>
-            <Paper 
-              sx={{ 
-                borderRadius: 3, 
-                overflow: 'hidden',
-                background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
-                backdropFilter: 'blur(20px)',
-                border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+      <Box sx={{ maxWidth: 900, mx: 'auto' }}>
+        {/* Upload Area */}
+        {!selectedFile && (
+          <Fade in={!selectedFile}>
+            <Paper
+              ref={dropZoneRef}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
+              sx={{
+                border: `3px dashed ${dragOver ? theme.palette.primary.main : theme.palette.divider}`,
+                borderRadius: 4,
+                p: { xs: 4, md: 8 },
+                textAlign: 'center',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                backgroundColor: dragOver 
+                  ? alpha(theme.palette.primary.main, 0.04)
+                  : alpha(theme.palette.background.paper, 0.8),
+                backdropFilter: 'blur(10px)',
+                '&:hover': {
+                  borderColor: theme.palette.primary.main,
+                  backgroundColor: alpha(theme.palette.primary.main, 0.04),
+                  transform: 'translateY(-4px)',
+                  boxShadow: theme.shadows[8],
+                }
               }}
             >
-              {/* Image Display */}
-              <Box sx={{ position: 'relative' }}>
-                {processedFile ? (
-                  <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' } }}>
-                    {/* Original */}
-                    <Box sx={{ flex: 1, p: 2 }}>
-                      <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
-                        Original
-                      </Typography>
-                      <img 
-                        src={selectedFile} 
-                        alt="Original" 
-                        style={{ 
-                          width: '100%', 
-                          borderRadius: 8,
-                          boxShadow: theme.shadows[2]
-                        }} 
-                      />
-                    </Box>
-                    
-                    {/* Processed */}
-                    <Box sx={{ flex: 1, p: 2 }}>
-                      <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
-                        Background Removed
-                      </Typography>
-                      <Box 
-                        className="checkerboard"
-                        sx={{ borderRadius: 2, overflow: 'hidden' }}
-                      >
-                        <img 
-                          src={processedFile} 
-                          alt="Processed" 
-                          style={{ 
-                            width: '100%',
-                            display: 'block'
-                          }} 
-                        />
-                      </Box>
-                    </Box>
-                  </Box>
-                ) : (
-                  <Box sx={{ p: 4, textAlign: 'center' }}>
-                    <img 
-                      src={selectedFile} 
-                      alt="Original" 
-                      style={{ 
-                        maxWidth: '100%', 
-                        maxHeight: 400,
-                        borderRadius: 8,
-                        boxShadow: theme.shadows[2]
-                      }} 
-                    />
-                    
-                    {processing && (
-                      <Box sx={{ mt: 3 }}>
-                        <CircularProgress size={40} thickness={4} />
-                        <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-                          Removing background...
-                        </Typography>
-                      </Box>
-                    )}
-                  </Box>
-                )}
-              </Box>
+              <CloudUploadIcon 
+                sx={{ 
+                  fontSize: { xs: 64, md: 80 }, 
+                  color: theme.palette.primary.main,
+                  mb: 3,
+                  opacity: 0.8
+                }} 
+              />
+              <Typography variant="h4" sx={{ mb: 2, fontWeight: 600 }}>
+                {dragOver ? 'Drop your image here' : 'Upload Your Image'}
+              </Typography>
+              <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
+                Drag & drop or click to select
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Supports PNG, JPG, JPEG • Max 10MB
+              </Typography>
+              
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={handleFileSelect}
+              />
+            </Paper>
+          </Fade>
+        )}
 
-              {/* Action Buttons */}
-              <Box sx={{ p: 3, borderTop: `1px solid ${theme.palette.divider}` }}>
-                <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
-                  {!processing && !processedFile && (
-                    <Button
-                      variant="contained"
-                      startIcon={<AutoFixHighIcon />}
-                      onClick={() => handleFileUpload(selectedFile)}
-                      disabled={processing}
-                      sx={{
-                        borderRadius: 2,
-                        px: 4,
-                        py: 1.5,
-                        background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
-                        boxShadow: theme.shadows[4],
-                        '&:hover': {
-                          boxShadow: theme.shadows[8],
-                          transform: 'translateY(-1px)'
-                        }
-                      }}
-                    >
-                      Remove Background
-                    </Button>
-                  )}
+        {/* Processing/Results Area */}
+        {selectedFile && (
+          <Slide direction="up" in={Boolean(selectedFile)}>
+            <Box>
+              <Paper 
+                sx={{ 
+                  borderRadius: 4, 
+                  overflow: 'hidden',
+                  boxShadow: theme.shadows[8]
+                }}
+              >
+                {/* Image Comparison */}
+                <Box sx={{ p: 3 }}>
+                  <Typography variant="h5" sx={{ mb: 3, fontWeight: 600, textAlign: 'center' }}>
+                    {processing ? 'Processing Your Image...' : 'Background Removed!'}
+                  </Typography>
                   
-                  {processedFile && (
-                    <Button
-                      variant="contained"
-                      startIcon={<DownloadIcon />}
-                      onClick={handleDownload}
-                      sx={{
-                        borderRadius: 2,
-                        px: 4,
-                        py: 1.5,
-                        background: 'linear-gradient(45deg, #4CAF50 30%, #45a049 90%)',
-                        boxShadow: theme.shadows[4],
-                        '&:hover': {
-                          boxShadow: theme.shadows[8],
-                          transform: 'translateY(-1px)'
-                        }
-                      }}
-                    >
-                      Download
-                    </Button>
-                  )}
-                  
-                  <Button
-                    variant="outlined"
-                    onClick={resetUpload}
-                    sx={{
-                      borderRadius: 2,
-                      px: 4,
-                      py: 1.5,
-                      borderWidth: 2,
-                      '&:hover': {
-                        borderWidth: 2,
-                        transform: 'translateY(-1px)'
-                      }
+                  <Box 
+                    sx={{ 
+                      display: 'grid',
+                      gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+                      gap: 3,
+                      mb: 3
                     }}
                   >
-                    Upload New
-                  </Button>
+                    {/* Original Image */}
+                    <Box>
+                      <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 500 }}>
+                        Original
+                      </Typography>
+                      <Paper
+                        sx={{
+                          p: 2,
+                          borderRadius: 2,
+                          background: 'linear-gradient(45deg, #f0f0f0 25%, transparent 25%), linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #f0f0f0 75%), linear-gradient(-45deg, transparent 75%, #f0f0f0 75%)',
+                          backgroundSize: '20px 20px',
+                          backgroundPosition: '0 0, 0 10px, 10px -10px, -10px 0px'
+                        }}
+                      >
+                        <img
+                          src={selectedFile}
+                          alt="Original"
+                          style={{
+                            width: '100%',
+                            height: 'auto',
+                            maxHeight: '300px',
+                            objectFit: 'contain',
+                            borderRadius: '8px'
+                          }}
+                        />
+                      </Paper>
+                    </Box>
+
+                    {/* Processed Image */}
+                    <Box>
+                      <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 500 }}>
+                        Background Removed
+                      </Typography>
+                      <Paper
+                        sx={{
+                          p: 2,
+                          borderRadius: 2,
+                          background: 'linear-gradient(45deg, #f0f0f0 25%, transparent 25%), linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #f0f0f0 75%), linear-gradient(-45deg, transparent 75%, #f0f0f0 75%)',
+                          backgroundSize: '20px 20px',
+                          backgroundPosition: '0 0, 0 10px, 10px -10px, -10px 0px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          minHeight: '200px'
+                        }}
+                      >
+                        {processing ? (
+                          <Box sx={{ textAlign: 'center' }}>
+                            <CircularProgress size={48} sx={{ mb: 2 }} />
+                            <Typography variant="body2" color="text.secondary">
+                              AI is removing the background...
+                            </Typography>
+                          </Box>
+                        ) : processedFile ? (
+                          <img
+                            src={processedFile}
+                            alt="Processed"
+                            style={{
+                              width: '100%',
+                              height: 'auto',
+                              maxHeight: '300px',
+                              objectFit: 'contain',
+                              borderRadius: '8px'
+                            }}
+                          />
+                        ) : (
+                          <Typography color="text.secondary">
+                            Processing failed
+                          </Typography>
+                        )}
+                      </Paper>
+                    </Box>
+                  </Box>
+
+                  {/* Action Buttons */}
+                  <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
+                    {processedFile && !processing && (
+                      <Button
+                        variant="contained"
+                        size="large"
+                        startIcon={<DownloadIcon />}
+                        onClick={handleDownload}
+                        sx={{
+                          borderRadius: 3,
+                          px: 4,
+                          py: 1.5,
+                          fontWeight: 600,
+                          background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                          '&:hover': {
+                            background: 'linear-gradient(45deg, #1976D2 30%, #0097A7 90%)',
+                          }
+                        }}
+                      >
+                        Download PNG
+                      </Button>
+                    )}
+                    
+                    <Button
+                      variant="outlined"
+                      size="large"
+                      startIcon={<RestartAltIcon />}
+                      onClick={resetUpload}
+                      sx={{
+                        borderRadius: 3,
+                        px: 4,
+                        py: 1.5,
+                        fontWeight: 600
+                      }}
+                    >
+                      Upload New Image
+                    </Button>
+                  </Box>
                 </Box>
+              </Paper>
+
+              {/* Middle Banner Ad */}
+              <Box sx={{ my: 4 }}>
+                <BannerAd slot="MIDDLE_BANNER_SLOT" />
               </Box>
+            </Box>
+          </Slide>
+        )}
+
+        {/* Features Section */}
+        <Box sx={{ mt: 6, mb: 4 }}>
+          <Typography variant="h4" sx={{ textAlign: 'center', mb: 4, fontWeight: 600 }}>
+            Why Choose PixGone?
+          </Typography>
+          <Box 
+            sx={{ 
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
+              gap: 3
+            }}
+          >
+            <Paper sx={{ p: 3, textAlign: 'center', borderRadius: 3 }}>
+              <AutoFixHighIcon sx={{ fontSize: 48, color: theme.palette.primary.main, mb: 2 }} />
+              <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
+                AI-Powered
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Advanced AI algorithms for precise background removal
+              </Typography>
+            </Paper>
+            
+            <Paper sx={{ p: 3, textAlign: 'center', borderRadius: 3 }}>
+              <CloudUploadIcon sx={{ fontSize: 48, color: theme.palette.primary.main, mb: 2 }} />
+              <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
+                100% Free
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                No watermarks, no limits, no signup required
+              </Typography>
+            </Paper>
+            
+            <Paper sx={{ p: 3, textAlign: 'center', borderRadius: 3 }}>
+              <DownloadIcon sx={{ fontSize: 48, color: theme.palette.primary.main, mb: 2 }} />
+              <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
+                Instant Results
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Get your processed image in seconds
+              </Typography>
             </Paper>
           </Box>
-        </Slide>
-      )}
-    </Box>
+        </Box>
+
+        {/* Bottom Banner Ad */}
+        <ResponsiveAd slot="BOTTOM_BANNER_SLOT" />
+      </Box>
+    </Container>
   );
 };
 

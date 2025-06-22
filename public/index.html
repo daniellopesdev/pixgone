@@ -4,27 +4,77 @@
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico?v=2" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="free remove background from images and videos"
-    />
+    <meta name="theme-color" content="#2196F3" />
+    
+    <!-- SEO Meta Tags -->
+    <title>PixGone - Free AI Background Removal Tool | Remove Image Backgrounds Instantly</title>
+    <meta name="description" content="Remove backgrounds from images instantly with PixGone's AI-powered tool. Free, fast, and precise background removal for e-commerce, social media, and photography. No signup required!" />
+    <meta name="keywords" content="background removal, remove background, AI background remover, transparent background, photo editor, image editing, e-commerce photos, product photos, free background removal" />
+    <meta name="author" content="PixGone" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://pixgone.vercel.app/" />
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="PixGone - Free AI Background Removal Tool" />
+    <meta property="og:description" content="Remove backgrounds from images instantly with AI. Free, fast, and precise background removal tool." />
+    <meta property="og:image" content="%PUBLIC_URL%/og-image.png" />
+    <meta property="og:url" content="https://pixgone.vercel.app/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="PixGone" />
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="PixGone - Free AI Background Removal Tool" />
+    <meta name="twitter:description" content="Remove backgrounds from images instantly with AI. Free, fast, and precise." />
+    <meta name="twitter:image" content="%PUBLIC_URL%/og-image.png" />
+    
+    <!-- Additional SEO -->
+    <meta name="language" content="English" />
+    <meta name="revisit-after" content="7 days" />
+    <meta name="distribution" content="global" />
+    <meta name="rating" content="general" />
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Google AdSense - Replace YOUR_ADSENSE_CLIENT_ID with your actual AdSense client ID -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-YOUR_ADSENSE_CLIENT_ID" crossorigin="anonymous"></script>
+    
+    <!-- Google Analytics - Replace YOUR_GA_MEASUREMENT_ID with your actual GA4 measurement ID -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=YOUR_GA_MEASUREMENT_ID"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'YOUR_GA_MEASUREMENT_ID');
+    </script>
+    
+    <!-- Structured Data for SEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "PixGone",
+      "description": "Free AI-powered background removal tool for images",
+      "url": "https://pixgone.vercel.app/",
+      "applicationCategory": "PhotographyApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "creator": {
+        "@type": "Organization",
+        "name": "PixGone"
+      }
+    }
+    </script>
+    
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <!--
-      manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
-
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
-    <title>BG Bye</title>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
