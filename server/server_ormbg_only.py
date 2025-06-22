@@ -27,6 +27,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+def try_import_ormbg():
+    """Try to import ormbg, return None if failed"""
+    try:
+        from rembg import remove
+        print("✅ ormbg imported successfully")
+        return remove
+    except ImportError as e:
+        print(f"❌ ormbg import failed: {e}")
+        return None
+    except Exception as e:
+        print(f"❌ ormbg error: {e}")
+        return None
+
 def simple_background_removal(image):
     """Simple background removal - removes white/bright backgrounds"""
     try:
@@ -72,12 +85,25 @@ async def remove_background(file: UploadFile = File(...), method: str = Form(def
         
         start_time = time.time()
         
-        # Use simple background removal
-        print("Using simple background removal algorithm")
-        no_bg_image = simple_background_removal(image)
-        
-        process_time = time.time() - start_time
-        print(f"Background removal completed in {process_time:.2f} seconds")
+        # Try ormbg first
+        remove_func = try_import_ormbg()
+        if remove_func and method == "ormbg":
+            try:
+                print("Using ormbg for background removal")
+                no_bg_image = remove_func(image)
+                process_time = time.time() - start_time
+                print(f"ormbg completed in {process_time:.2f} seconds")
+            except Exception as e:
+                print(f"ormbg failed: {e}, falling back to simple method")
+                no_bg_image = simple_background_removal(image)
+                process_time = time.time() - start_time
+                print(f"Simple method completed in {process_time:.2f} seconds")
+        else:
+            # Use simple background removal
+            print("Using simple background removal algorithm")
+            no_bg_image = simple_background_removal(image)
+            process_time = time.time() - start_time
+            print(f"Background removal completed in {process_time:.2f} seconds")
         
         # Convert to PNG
         with io.BytesIO() as output:
