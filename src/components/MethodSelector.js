@@ -11,8 +11,9 @@ const MethodSelector = ({ selectedMethod, onMethodChange }) => {
         onChange={(e) => onMethodChange(e.target.value)}
         className="method-dropdown"
       >
-        <option value="ormbg">ormbg (Recommended)</option>
-        <option value="inspyrenet">InSPyReNet</option>
+        <option value="">Select a method...</option>
+        <option value="ormbg">ormbg (Fast & Reliable)</option>
+        <option value="bria_rmbg">Bria RMBG1.4 (High Quality)</option>
       </select>
     </div>
   );

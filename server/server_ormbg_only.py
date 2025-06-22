@@ -5,27 +5,24 @@ import io
 import time
 import os
 import sys
+import numpy as np
 
 print("=== Starting PixGone Server ===")
 print(f"Python version: {sys.version}")
 print(f"Current directory: {os.getcwd()}")
-print(f"Files in directory: {os.listdir('.')}")
 
 app = FastAPI()
 
-# Add CORS middleware
+# Add CORS middleware with more permissive settings
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:9877", 
-        "https://pixgone.vercel.app",
-        "https://*.vercel.app",
-    ],
+    allow_origins=["*"],  # Allow all origins for now
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+print("✅ CORS middleware configured")
 
 def try_import_ormbg():
     """Try to import ormbg, return None if failed"""
@@ -40,15 +37,17 @@ def try_import_ormbg():
         print(f"❌ ormbg error: {e}")
         return None
 
-def try_import_inspyrenet():
-    """Try to import InSPyReNet, return None if failed"""
+def try_import_bria_rmbg():
+    """Try to import Bria RMBG1.4, return None if failed"""
     try:
-        # InSPyReNet would be imported here
-        # For now, we'll use a placeholder
-        print("❌ InSPyReNet not implemented yet, using fallback")
+        from transformers import pipeline
+        print("✅ Bria RMBG1.4 pipeline imported successfully")
+        return pipeline("image-segmentation", model="briaai/RMBG-1.4", trust_remote_code=True)
+    except ImportError as e:
+        print(f"❌ Bria RMBG1.4 import failed: {e}")
         return None
     except Exception as e:
-        print(f"❌ InSPyReNet error: {e}")
+        print(f"❌ Bria RMBG1.4 error: {e}")
         return None
 
 def simple_background_removal(image):
@@ -82,6 +81,7 @@ def simple_background_removal(image):
 
 @app.post("/remove_background/")
 async def remove_background(file: UploadFile = File(...), method: str = Form(default="ormbg")):
+    print(f"🔄 Processing request with method: {method}")
     try:
         # Validate file
         if not file.content_type or not file.content_type.startswith('image/'):
@@ -116,21 +116,32 @@ async def remove_background(file: UploadFile = File(...), method: str = Form(def
                 process_time = time.time() - start_time
                 print(f"Simple method completed in {process_time:.2f} seconds")
         
-        elif method == "inspyrenet":
-            remove_func = try_import_inspyrenet()
-            if remove_func:
+        elif method == "bria_rmbg":
+            bria_pipeline = try_import_bria_rmbg()
+            if bria_pipeline:
                 try:
-                    print("Using InSPyReNet for background removal")
-                    no_bg_image = remove_func(image)
+                    print("Using Bria RMBG1.4 for background removal")
+                    # Convert PIL image to bytes for the pipeline
+                    img_byte_arr = io.BytesIO()
+                    image.save(img_byte_arr, format='PNG')
+                    img_byte_arr = img_byte_arr.getvalue()
+                    
+                    # Get mask from Bria
+                    mask = bria_pipeline(img_byte_arr, return_mask=True)
+                    
+                    # Apply mask to create transparent background
+                    no_bg_image = image.copy()
+                    no_bg_image.putalpha(mask)
+                    
                     process_time = time.time() - start_time
-                    print(f"InSPyReNet completed in {process_time:.2f} seconds")
+                    print(f"Bria RMBG1.4 completed in {process_time:.2f} seconds")
                 except Exception as e:
-                    print(f"InSPyReNet failed: {e}, falling back to simple method")
+                    print(f"Bria RMBG1.4 failed: {e}, falling back to simple method")
                     no_bg_image = simple_background_removal(image)
                     process_time = time.time() - start_time
                     print(f"Simple method completed in {process_time:.2f} seconds")
             else:
-                print("InSPyReNet not available, using simple method")
+                print("Bria RMBG1.4 not available, using simple method")
                 no_bg_image = simple_background_removal(image)
                 process_time = time.time() - start_time
                 print(f"Simple method completed in {process_time:.2f} seconds")
@@ -147,6 +158,7 @@ async def remove_background(file: UploadFile = File(...), method: str = Form(def
             no_bg_image.save(output, format="PNG")
             content = output.getvalue()
 
+        print("✅ Processing completed successfully")
         return Response(content=content, media_type="image/png")
 
     except HTTPException:

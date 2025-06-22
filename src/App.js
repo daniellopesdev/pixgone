@@ -22,6 +22,7 @@ function App() {
       setSelectedFile(file);
       setError('');
       setProcessedImage(null);
+      setSelectedMethod('');
     } else {
       setError('Please select a valid image file.');
     }
@@ -34,6 +35,7 @@ function App() {
       setSelectedFile(file);
       setError('');
       setProcessedImage(null);
+      setSelectedMethod('');
     } else {
       setError('Please drop a valid image file.');
     }
