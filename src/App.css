@@ -230,6 +230,46 @@
   color: #7f8c8d;
 }
 
+.file-info-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.progress-bar-container {
+  width: 100%;
+  max-width: 400px;
+  margin: 1rem auto 0 auto;
+  background: #e1e5e9;
+  border-radius: 8px;
+  height: 24px;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  display: flex;
+  align-items: center;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  border-radius: 8px;
+  transition: width 0.3s ease;
+}
+
+.progress-label {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  color: #2c3e50;
+  font-weight: 600;
+  font-size: 1rem;
+  width: 100%;
+  text-align: center;
+  line-height: 24px;
+  z-index: 2;
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 0 1rem;

@@ -9,10 +9,12 @@ function App() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [processedImage, setProcessedImage] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [error, setError] = useState('');
   const [backgroundColor, setBackgroundColor] = useState('#ffffff');
-  const [selectedMethod, setSelectedMethod] = useState('ormbg');
+  const [selectedMethod, setSelectedMethod] = useState('');
   const fileInputRef = useRef(null);
+  const progressInterval = useRef(null);
 
   const handleFileSelect = (event) => {
     const file = event.target.files[0];
@@ -42,13 +44,22 @@ function App() {
   };
 
   const processImage = async () => {
-    if (!selectedFile) {
-      setError('Please select an image first.');
+    if (!selectedFile || !selectedMethod) {
+      setError('Please select an image and a method.');
       return;
     }
 
     setIsProcessing(true);
+    setProgress(0);
     setError('');
+
+    // Simulate progress
+    progressInterval.current = setInterval(() => {
+      setProgress((prev) => {
+        if (prev < 90) return prev + 2;
+        return prev;
+      });
+    }, 100);
 
     const formData = new FormData();
     formData.append('file', selectedFile);
@@ -67,11 +78,14 @@ function App() {
       const blob = await response.blob();
       const imageUrl = URL.createObjectURL(blob);
       setProcessedImage(imageUrl);
+      setProgress(100);
     } catch (error) {
       console.error('Error processing image:', error);
       setError('Failed to process image. Please try again.');
+      setProgress(0);
     } finally {
       setIsProcessing(false);
+      clearInterval(progressInterval.current);
     }
   };
 
@@ -90,6 +104,8 @@ function App() {
     setSelectedFile(null);
     setProcessedImage(null);
     setError('');
+    setSelectedMethod('');
+    setProgress(0);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -132,11 +148,26 @@ function App() {
             </div>
 
             {selectedFile && (
-              <div className="file-info">
+              <div className="file-info file-info-row">
                 <p>Selected: {selectedFile.name}</p>
-                <button className="process-btn" onClick={processImage} disabled={isProcessing}>
+                <MethodSelector
+                  selectedMethod={selectedMethod}
+                  onMethodChange={setSelectedMethod}
+                />
+                <button
+                  className="process-btn"
+                  onClick={processImage}
+                  disabled={isProcessing || !selectedFile || !selectedMethod}
+                >
                   {isProcessing ? 'Processing...' : 'Remove Background'}
                 </button>
+              </div>
+            )}
+
+            {isProcessing && (
+              <div className="progress-bar-container">
+                <div className="progress-bar" style={{ width: `${progress}%` }} />
+                <span className="progress-label">{progress}%</span>
               </div>
             )}
 
@@ -145,11 +176,6 @@ function App() {
 
           {processedImage && (
             <div className="results-section">
-              <MethodSelector 
-                selectedMethod={selectedMethod}
-                onMethodChange={setSelectedMethod}
-              />
-              
               <ColorPicker 
                 onColorChange={setBackgroundColor} 
                 currentColor={backgroundColor} 
