@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Box, ThemeProvider, createTheme } from '@mui/material';
+import { Box, ThemeProvider, createTheme, IconButton } from '@mui/material';
+import { LightMode as LightModeIcon, DarkMode as DarkModeIcon } from '@mui/icons-material';
 import { Toaster, toast } from 'react-hot-toast';
 import MinimalImageUpload from './components/MinimalImageUpload';
 
@@ -89,11 +90,11 @@ function MinimalApp() {
       >
         <MinimalImageUpload showErrorToast={showErrorToast} />
         
-        {/* Theme Toggle - Hidden for cleaner look, but you can add it back */}
-        {/* <IconButton
+        {/* Theme Toggle */}
+        <IconButton
           onClick={() => {
             setDarkMode(!darkMode);
-            localStorage.setItem('ormbg_theme', !darkMode);
+            localStorage.setItem('ormbg_theme', (!darkMode).toString());
           }}
           sx={{
             position: 'fixed',
@@ -104,7 +105,7 @@ function MinimalApp() {
           }}
         >
           {darkMode ? <LightModeIcon /> : <DarkModeIcon />}
-        </IconButton> */}
+        </IconButton>
       </Box>
       <Toaster 
         toastOptions={{
