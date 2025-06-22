@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import ColorPicker from './components/ColorPicker';
+import MethodSelector from './components/MethodSelector';
 import './App.css';
 
 function App() {
@@ -10,6 +11,7 @@ function App() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
   const [backgroundColor, setBackgroundColor] = useState('#ffffff');
+  const [selectedMethod, setSelectedMethod] = useState('ormbg');
   const fileInputRef = useRef(null);
 
   const handleFileSelect = (event) => {
@@ -50,7 +52,7 @@ function App() {
 
     const formData = new FormData();
     formData.append('file', selectedFile);
-    formData.append('method', 'ormbg');
+    formData.append('method', selectedMethod);
 
     try {
       const response = await fetch(`${process.env.REACT_APP_API_URL || 'https://pixgone-production.up.railway.app'}/remove_background/`, {
@@ -104,6 +106,13 @@ function App() {
             <p>Professional AI-powered background removal. Free, fast, and easy to use.</p>
           </div>
 
+          {/* Top Ad Space */}
+          <div className="ad-section">
+            <div className="ad-placeholder">
+              <p>Advertisement Space</p>
+            </div>
+          </div>
+
           <div className="upload-section">
             <div className="upload-area" onDrop={handleDrop} onDragOver={handleDragOver}>
               <input
@@ -136,6 +145,11 @@ function App() {
 
           {processedImage && (
             <div className="results-section">
+              <MethodSelector 
+                selectedMethod={selectedMethod}
+                onMethodChange={setSelectedMethod}
+              />
+              
               <ColorPicker 
                 onColorChange={setBackgroundColor} 
                 currentColor={backgroundColor} 
@@ -177,7 +191,7 @@ function App() {
             </div>
           )}
 
-          {/* Ad Placeholder */}
+          {/* Bottom Ad Space */}
           <div className="ad-section">
             <div className="ad-placeholder">
               <p>Advertisement Space</p>

@@ -40,6 +40,17 @@ def try_import_ormbg():
         print(f"❌ ormbg error: {e}")
         return None
 
+def try_import_inspyrenet():
+    """Try to import InSPyReNet, return None if failed"""
+    try:
+        # InSPyReNet would be imported here
+        # For now, we'll use a placeholder
+        print("❌ InSPyReNet not implemented yet, using fallback")
+        return None
+    except Exception as e:
+        print(f"❌ InSPyReNet error: {e}")
+        return None
+
 def simple_background_removal(image):
     """Simple background removal - removes white/bright backgrounds"""
     try:
@@ -81,25 +92,51 @@ async def remove_background(file: UploadFile = File(...), method: str = Form(def
             raise HTTPException(status_code=400, detail="Empty file")
         
         image = Image.open(io.BytesIO(image_data)).convert('RGB')
-        print(f"Processing image: {image.size}")
+        print(f"Processing image: {image.size} with method: {method}")
         
         start_time = time.time()
         
-        # Try ormbg first
-        remove_func = try_import_ormbg()
-        if remove_func and method == "ormbg":
-            try:
-                print("Using ormbg for background removal")
-                no_bg_image = remove_func(image)
-                process_time = time.time() - start_time
-                print(f"ormbg completed in {process_time:.2f} seconds")
-            except Exception as e:
-                print(f"ormbg failed: {e}, falling back to simple method")
+        # Try the selected method
+        if method == "ormbg":
+            remove_func = try_import_ormbg()
+            if remove_func:
+                try:
+                    print("Using ormbg for background removal")
+                    no_bg_image = remove_func(image)
+                    process_time = time.time() - start_time
+                    print(f"ormbg completed in {process_time:.2f} seconds")
+                except Exception as e:
+                    print(f"ormbg failed: {e}, falling back to simple method")
+                    no_bg_image = simple_background_removal(image)
+                    process_time = time.time() - start_time
+                    print(f"Simple method completed in {process_time:.2f} seconds")
+            else:
+                print("ormbg not available, using simple method")
                 no_bg_image = simple_background_removal(image)
                 process_time = time.time() - start_time
                 print(f"Simple method completed in {process_time:.2f} seconds")
+        
+        elif method == "inspyrenet":
+            remove_func = try_import_inspyrenet()
+            if remove_func:
+                try:
+                    print("Using InSPyReNet for background removal")
+                    no_bg_image = remove_func(image)
+                    process_time = time.time() - start_time
+                    print(f"InSPyReNet completed in {process_time:.2f} seconds")
+                except Exception as e:
+                    print(f"InSPyReNet failed: {e}, falling back to simple method")
+                    no_bg_image = simple_background_removal(image)
+                    process_time = time.time() - start_time
+                    print(f"Simple method completed in {process_time:.2f} seconds")
+            else:
+                print("InSPyReNet not available, using simple method")
+                no_bg_image = simple_background_removal(image)
+                process_time = time.time() - start_time
+                print(f"Simple method completed in {process_time:.2f} seconds")
+        
         else:
-            # Use simple background removal
+            # Use simple background removal as fallback
             print("Using simple background removal algorithm")
             no_bg_image = simple_background_removal(image)
             process_time = time.time() - start_time

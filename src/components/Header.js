@@ -9,11 +9,6 @@ const Header = () => {
           <span className="logo-icon">🎨</span>
           <span className="logo-text">PixGone</span>
         </div>
-        <nav className="nav">
-          <a href="#home" className="nav-link">Home</a>
-          <a href="#about" className="nav-link">About</a>
-          <a href="#contact" className="nav-link">Contact</a>
-        </nav>
       </div>
     </header>
   );
