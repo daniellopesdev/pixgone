@@ -178,18 +178,19 @@ function App() {
           <AdBanner adSlot="YOUR_TOP_AD_SLOT" />
 
           <div className="upload-section">
-            <div className="upload-area" onDrop={handleDrop} onDragOver={handleDragOver}>
+            <div className={`upload-area${adblockOpen ? ' blocked' : ''}`} onDrop={adblockOpen ? undefined : handleDrop} onDragOver={adblockOpen ? undefined : handleDragOver} style={adblockOpen ? { pointerEvents: 'none', opacity: 0.5, filter: 'grayscale(0.7)' } : {}}>
               <input
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
-                onChange={handleFileSelect}
+                onChange={adblockOpen ? undefined : handleFileSelect}
                 className="file-input"
+                disabled={adblockOpen}
               />
               <div className="upload-content">
                 <div className="upload-icon">📁</div>
                 <p>Drag & drop an image here or click to browse</p>
-                <button className="browse-btn" onClick={() => fileInputRef.current?.click()}>
+                <button className="browse-btn" onClick={() => !adblockOpen && fileInputRef.current?.click()} disabled={adblockOpen} title={adblockOpen ? 'Enable ads to use this feature' : ''}>
                   Choose File
                 </button>
               </div>
@@ -201,7 +202,8 @@ function App() {
                 <button
                   className="process-btn"
                   onClick={processImage}
-                  disabled={isProcessing}
+                  disabled={isProcessing || adblockOpen}
+                  title={adblockOpen ? 'Enable ads to use this feature' : ''}
                 >
                   {isProcessing ? 'Processing...' : 'Remove Background'}
                 </button>
@@ -255,10 +257,10 @@ function App() {
               </div>
 
               <div className="action-buttons">
-                <button className="download-btn" onClick={downloadImage}>
+                <button className="download-btn" onClick={downloadImage} disabled={adblockOpen} title={adblockOpen ? 'Enable ads to use this feature' : ''}>
                   Download Image
                 </button>
-                <button className="reset-btn" onClick={resetApp}>
+                <button className="reset-btn" onClick={resetApp} disabled={adblockOpen} title={adblockOpen ? 'Enable ads to use this feature' : ''}>
                   Process Another Image
                 </button>
               </div>
