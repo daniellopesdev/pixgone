@@ -6,7 +6,7 @@
 
 .main-content {
   flex: 1;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: linear-gradient(135deg, #000cff 0%, #4f8cff 100%);
   padding: 2rem 0;
 }
 
@@ -86,7 +86,7 @@
 }
 
 .browse-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #000cff 0%, #4f8cff 100%);
   color: white;
   border: none;
   padding: 0.8rem 2rem;
@@ -99,7 +99,7 @@
 
 .browse-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 12, 255, 0.2);
 }
 
 .file-info {
@@ -114,7 +114,7 @@
 }
 
 .process-btn {
-  background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+  background: linear-gradient(135deg, #000cff 0%, #4f8cff 100%);
   color: white;
   border: none;
   padding: 0.8rem 2rem;
@@ -126,7 +126,7 @@
 
 .process-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 12, 255, 0.2);
 }
 
 .process-btn:disabled {
@@ -199,13 +199,12 @@
 }
 
 .download-btn {
-  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  background: linear-gradient(135deg, #000cff 0%, #4f8cff 100%);
   color: white;
 }
 
 .download-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 12, 255, 0.2);
 }
 
 .reset-btn {
@@ -214,8 +213,7 @@
 }
 
 .reset-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(149, 165, 166, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 12, 255, 0.1);
 }
 
 .ad-section {
@@ -366,5 +364,11 @@
 .modal-btn:hover {
   background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
   transform: scale(1.05);
+}
+
+/* Highlight utility class */
+.highlight {
+  color: #000cff;
+  font-weight: 700;
 }
 
