@@ -2,6 +2,9 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+# Install wget for downloading the model
+RUN apt-get update && apt-get install -y wget && rm -rf /var/lib/apt/lists/*
+
 # Debug: Show what's in the current directory
 RUN ls -la
 
@@ -14,11 +17,11 @@ COPY ormbg/ ./ormbg/
 # Debug: Show what's in the app directory
 RUN ls -la
 
-# Copy the model file from the correct location
+# Create the model directory and download the model file
 RUN mkdir -p /root/.ormbg
-COPY models/ormbg/ormbg.pth /root/.ormbg/ormbg.pth
+RUN wget -O /root/.ormbg/ormbg.pth https://huggingface.co/schirrmacher/ormbg/resolve/main/models/ormbg.pth
 
-# Debug: Verify the model file was copied
+# Debug: Verify the model file was downloaded
 RUN ls -la /root/.ormbg/
 RUN echo "Model file size:" && ls -lh /root/.ormbg/ormbg.pth
 
