@@ -12,6 +12,8 @@ import json
 from datetime import datetime, timedelta
 from collections import defaultdict
 import threading
+import urllib.request
+import shutil
 
 print("=== Starting PixGone Server ===")
 print(f"Python version: {sys.version}")
@@ -135,24 +137,24 @@ def download_model_if_needed(model_path):
             url = "https://huggingface.co/schirrmacher/ormbg/resolve/main/models/ormbg.pth"
             print(f"--- Downloading from {url} to {model_path} ---")
             
-            # Using os.system with wget as it's installed in our Docker container
-            # This provides download progress in the logs
-            command = f"wget -O {model_path} {url}"
-            result = os.system(command)
+            # Using Python's urllib instead of wget
+            with urllib.request.urlopen(url) as response, open(model_path, 'wb') as out_file:
+                shutil.copyfileobj(response, out_file)
             
-            if result == 0 and os.path.exists(model_path):
+            if os.path.exists(model_path):
                 print("--- ✅ Model download successful. ---")
                 file_size = os.path.getsize(model_path) / (1024*1024)
                 print(f"--- 📁 Model file size: {file_size:.1f} MB ---")
+                return True
             else:
-                print(f"--- ❌ Model download failed. Command exited with code: {result} ---")
+                print(f"--- ❌ Model download failed. File not created. ---")
                 return False
         except Exception as e:
             print(f"--- ❌ An exception occurred during download: {e} ---")
             return False
     else:
         print("--- ✅ Model file already exists. Skipping download. ---")
-    return True
+        return True
 
 def try_import_custom_ormbg():
     """Try to import custom ORMBG implementation"""
