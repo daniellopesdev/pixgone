@@ -13,8 +13,8 @@ const AdblockModal = ({ open, onClose }) => (
         <h2>AdBlock Detected!</h2>
         <p>
           Hey! Please disable your ad blocker to use <b>pixGone</b>.<br />
-          We only show a few ads to keep it free<br />
-          (and slightly better than some overpriced apps).
+          We only show a few ads to keep it free.
+       
         </p>
         <button className="modal-btn" onClick={onClose}>Okay, I'll disable it!</button>
       </div>
