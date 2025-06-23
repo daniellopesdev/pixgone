@@ -157,8 +157,8 @@ function App() {
       <main className="main-content">
         <div className="container">
           <div className="hero-section">
-            <h1>pixGone, slightly better than some overpriced apps.</h1>
-            <p>Professional AI-powered background removal. Free, fast, and easy to use.</p>
+            <h1>Slightly better than some overpriced apps.</h1>
+            <p>AI-powered background removal. Free, fast, and easy to use.</p>
           </div>
 
           {/* Top Ad Space */}
