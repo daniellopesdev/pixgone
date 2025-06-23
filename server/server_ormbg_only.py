@@ -129,6 +129,32 @@ def try_import_custom_ormbg():
         from ormbg import ORMBGProcessor
         print("✅ Custom ORMBG imported successfully")
         model_path = os.environ.get("ORMBG_MODEL_PATH", os.path.expanduser("~/.ormbg/ormbg.pth"))
+        print(f"🔍 Looking for model at: {model_path}")
+        
+        # Check if file exists
+        if os.path.exists(model_path):
+            print(f"✅ Model file found at: {model_path}")
+            file_size = os.path.getsize(model_path)
+            print(f"📁 Model file size: {file_size / (1024*1024):.1f} MB")
+        else:
+            print(f"❌ Model file NOT found at: {model_path}")
+            # List contents of the directory
+            model_dir = os.path.dirname(model_path)
+            if os.path.exists(model_dir):
+                print(f"📂 Contents of {model_dir}:")
+                try:
+                    for item in os.listdir(model_dir):
+                        item_path = os.path.join(model_dir, item)
+                        if os.path.isfile(item_path):
+                            size = os.path.getsize(item_path)
+                            print(f"  📄 {item} ({size / (1024*1024):.1f} MB)")
+                        else:
+                            print(f"  📁 {item}/")
+                except Exception as e:
+                    print(f"  ❌ Error listing directory: {e}")
+            else:
+                print(f"❌ Directory does not exist: {model_dir}")
+        
         processor = ORMBGProcessor(model_path)
         return processor.process_image
     except ImportError as e:
@@ -353,6 +379,38 @@ async def get_rate_limit_info(request: Request):
             "is_blocked": is_blocked,
             "rate_limit": RATE_LIMIT
         }
+
+@app.get("/debug/model")
+async def debug_model():
+    """Debug endpoint to check model file availability"""
+    model_path = os.environ.get("ORMBG_MODEL_PATH", os.path.expanduser("~/.ormbg/ormbg.pth"))
+    
+    debug_info = {
+        "model_path": model_path,
+        "file_exists": os.path.exists(model_path),
+        "current_working_dir": os.getcwd(),
+        "environment_vars": {
+            "ORMBG_MODEL_PATH": os.environ.get("ORMBG_MODEL_PATH", "Not set"),
+            "HOME": os.environ.get("HOME", "Not set"),
+            "USERPROFILE": os.environ.get("USERPROFILE", "Not set")
+        }
+    }
+    
+    if os.path.exists(model_path):
+        debug_info["file_size_mb"] = os.path.getsize(model_path) / (1024*1024)
+        debug_info["file_accessible"] = os.access(model_path, os.R_OK)
+    
+    # Check directory contents
+    model_dir = os.path.dirname(model_path)
+    if os.path.exists(model_dir):
+        try:
+            debug_info["directory_contents"] = os.listdir(model_dir)
+        except Exception as e:
+            debug_info["directory_error"] = str(e)
+    else:
+        debug_info["directory_exists"] = False
+    
+    return debug_info
 
 if __name__ == "__main__":
     import uvicorn
