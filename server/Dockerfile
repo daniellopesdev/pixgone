@@ -7,9 +7,9 @@ RUN pip install -r requirements.txt
 
 COPY server_ormbg_only.py .
 
-# Add these lines to copy the model file
+# Copy the model file from the correct location
 RUN mkdir -p /root/.ormbg
-COPY ormbg.pth /root/.ormbg/ormbg.pth
+COPY models/ormbg/ormbg.pth /root/.ormbg/ormbg.pth
 
 EXPOSE 8080
 

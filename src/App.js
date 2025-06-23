@@ -31,6 +31,8 @@ function App() {
   const [backgroundColor, setBackgroundColor] = useState('#ffffff');
   const [showStuckMsg, setShowStuckMsg] = useState(false);
   const [adblockOpen, setAdblockOpen] = useState(false);
+  const [rateLimitInfo, setRateLimitInfo] = useState(null);
+  const [rateLimitError, setRateLimitError] = useState(null);
   const fileInputRef = useRef(null);
   const progressInterval = useRef(null);
   const stuckTimeout = useRef(null);
@@ -69,26 +71,35 @@ function App() {
     return () => clearTimeout(stuckTimeout.current);
   }, [isProcessing, progress]);
 
-  const handleFileSelect = (event) => {
-    const file = event.target.files[0];
-    if (file && file.type.startsWith('image/')) {
-      setSelectedFile(file);
-      setError('');
-      setProcessedImage(null);
-    } else {
-      setError('Please select a valid image file.');
+  // Fetch rate limit info on component mount
+  useEffect(() => {
+    fetchRateLimitInfo();
+  }, []);
+
+  const fetchRateLimitInfo = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'https://pixgone-production.up.railway.app'}/rate-limit-info`);
+      if (response.ok) {
+        const data = await response.json();
+        setRateLimitInfo(data);
+      }
+    } catch (error) {
+      console.log("Could not fetch rate limit info:", error);
     }
   };
 
-  const handleDrop = (event) => {
+  const handleFileSelect = async (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      await processImage(file);
+    }
+  };
+
+  const handleDrop = async (event) => {
     event.preventDefault();
     const file = event.dataTransfer.files[0];
-    if (file && file.type.startsWith('image/')) {
-      setSelectedFile(file);
-      setError('');
-      setProcessedImage(null);
-    } else {
-      setError('Please drop a valid image file.');
+    if (file) {
+      await processImage(file);
     }
   };
 
@@ -96,15 +107,22 @@ function App() {
     event.preventDefault();
   };
 
-  const processImage = async () => {
-    if (!selectedFile) {
-      setError('Please select an image first.');
+  const processImage = async (file) => {
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file.');
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      alert('Image file size must be less than 10MB.');
       return;
     }
 
     setIsProcessing(true);
     setProgress(0);
     setError('');
+    setRateLimitError(null);
+    setProcessedImage(null);
 
     // Simulate progress
     progressInterval.current = setInterval(() => {
@@ -115,7 +133,7 @@ function App() {
     }, 100);
 
     const formData = new FormData();
-    formData.append('file', selectedFile);
+    formData.append('file', file);
 
     try {
       const response = await fetch(`${process.env.REACT_APP_API_URL || 'https://pixgone-production.up.railway.app'}/remove_background/`, {
@@ -123,14 +141,27 @@ function App() {
         body: formData,
       });
 
+      if (response.status === 429) {
+        const errorData = await response.json();
+        setRateLimitError(errorData);
+        setError(`Rate limit exceeded: ${errorData.message}`);
+        return;
+      }
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json();
+        setError(`Error: ${errorData.detail || 'Failed to process image'}`);
+        return;
       }
 
       const blob = await response.blob();
       const imageUrl = URL.createObjectURL(blob);
       setProcessedImage(imageUrl);
       setProgress(100);
+      
+      // Update rate limit info after successful processing
+      await fetchRateLimitInfo();
+      
     } catch (error) {
       console.error('Error processing image:', error);
       setError('Failed to process image. Please try again.');
@@ -177,6 +208,19 @@ function App() {
           {/* Top Ad Space */}
           <AdBanner adSlot="YOUR_TOP_AD_SLOT" />
 
+          {/* Rate Limit Status */}
+          {rateLimitInfo && (
+            <div className="rate-limit-status">
+              <div className="rate-limit-info">
+                <span>📊 Requests today: {rateLimitInfo.requests_today}/{rateLimitInfo.daily_limit}</span>
+                <span>🔄 Remaining: {rateLimitInfo.remaining_requests}</span>
+                {rateLimitInfo.is_blocked && (
+                  <span className="blocked-warning">🚫 Your IP is blocked for abuse</span>
+                )}
+              </div>
+            </div>
+          )}
+
           <div className="upload-section">
             <div className={`upload-area${adblockOpen ? ' blocked' : ''}`} onDrop={adblockOpen ? undefined : handleDrop} onDragOver={adblockOpen ? undefined : handleDragOver} style={adblockOpen ? { pointerEvents: 'none', opacity: 0.5, filter: 'grayscale(0.7)' } : {}}>
               <input
@@ -190,39 +234,36 @@ function App() {
               <div className="upload-content">
                 <div className="upload-icon">📁</div>
                 <p>Drag & drop an image here or click to browse</p>
-                <button className="browse-btn" onClick={() => !adblockOpen && fileInputRef.current?.click()} disabled={adblockOpen} title={adblockOpen ? 'Enable ads to use this feature' : ''}>
-                  Choose File
-                </button>
+                <p className="file-info">Max file size: 10MB</p>
               </div>
             </div>
 
-            {selectedFile && (
-              <div className="file-info">
-                <p>Selected: {selectedFile.name}</p>
-                <button
-                  className="process-btn"
-                  onClick={processImage}
-                  disabled={isProcessing || adblockOpen}
-                  title={adblockOpen ? 'Enable ads to use this feature' : ''}
-                >
-                  {isProcessing ? 'Processing...' : 'Remove Background'}
-                </button>
+            {error && (
+              <div className="error-message">
+                <p>{error}</p>
+                {rateLimitError && rateLimitError.code === 'DAILY_LIMIT_EXCEEDED' && (
+                  <p className="rate-limit-help">
+                    💡 Try again tomorrow or consider upgrading for more requests.
+                  </p>
+                )}
+                {rateLimitError && rateLimitError.code === 'IP_BLOCKED' && (
+                  <p className="rate-limit-help">
+                    💡 Your IP has been blocked due to excessive usage. Please contact support.
+                  </p>
+                )}
               </div>
             )}
 
             {isProcessing && (
-              <div className="progress-bar-container">
-                <div className="progress-bar" style={{ width: `${progress}%` }} />
-                <span className="progress-label">{progress}%</span>
-
+              <div className="processing-section">
+                <div className="progress-bar">
+                  <div className="progress-fill" style={{ width: `${progress}%` }}></div>
+                </div>
+                <p className="processing-text">
+                  {showStuckMsg ? "Still processing..." : "Processing your image..."}
+                </p>
               </div>
             )}
-
-            {showStuckMsg && (
-              <div className="progress-stuck-msg">It's still processing, don't worry.</div>
-            )}
-
-            {error && <div className="error-message">{error}</div>}
           </div>
 
           {processedImage && (
