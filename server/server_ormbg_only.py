@@ -134,21 +134,69 @@ def download_model_if_needed(model_path):
             print(f"--- Creating directory: {model_dir} ---")
             os.makedirs(model_dir, exist_ok=True)
             
-            url = "https://huggingface.co/schirrmacher/ormbg/resolve/main/models/ormbg.pth"
-            print(f"--- Downloading from {url} to {model_path} ---")
+            # Try different possible URLs for the model file
+            urls_to_try = [
+                "https://huggingface.co/schirrmacher/ormbg/resolve/main/models/ormbg.pth",
+                "https://huggingface.co/schirrmacher/ormbg/raw/main/models/ormbg.pth",
+                "https://huggingface.co/schirrmacher/ormbg/resolve/main/ormbg.pth"
+            ]
             
-            # Using Python's urllib instead of wget
-            with urllib.request.urlopen(url) as response, open(model_path, 'wb') as out_file:
-                shutil.copyfileobj(response, out_file)
+            success = False
+            for url in urls_to_try:
+                try:
+                    print(f"--- Trying URL: {url} ---")
+                    
+                    # Create a request with headers to mimic a browser
+                    req = urllib.request.Request(
+                        url,
+                        headers={
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                        }
+                    )
+                    
+                    # Download with timeout
+                    with urllib.request.urlopen(req, timeout=300) as response, open(model_path, 'wb') as out_file:
+                        shutil.copyfileobj(response, out_file)
+                    
+                    if os.path.exists(model_path):
+                        print("--- ✅ Model download successful. ---")
+                        file_size = os.path.getsize(model_path) / (1024*1024)
+                        print(f"--- 📁 Model file size: {file_size:.1f} MB ---")
+                        success = True
+                        break
+                    else:
+                        print(f"--- ❌ Download completed but file not found at {model_path} ---")
+                        
+                except Exception as e:
+                    print(f"--- ❌ Failed with URL {url}: {e} ---")
+                    continue
             
-            if os.path.exists(model_path):
-                print("--- ✅ Model download successful. ---")
-                file_size = os.path.getsize(model_path) / (1024*1024)
-                print(f"--- 📁 Model file size: {file_size:.1f} MB ---")
-                return True
-            else:
-                print(f"--- ❌ Model download failed. File not created. ---")
+            # If direct downloads failed, try huggingface_hub
+            if not success:
+                print("--- 🔄 Trying Hugging Face Hub download... ---")
+                try:
+                    from huggingface_hub import hf_hub_download
+                    print("--- 📥 Downloading via Hugging Face Hub ---")
+                    downloaded_path = hf_hub_download(
+                        repo_id="schirrmacher/ormbg",
+                        filename="models/ormbg.pth",
+                        cache_dir=model_dir
+                    )
+                    # Move to the expected location
+                    shutil.move(downloaded_path, model_path)
+                    print("--- ✅ Hugging Face Hub download successful. ---")
+                    file_size = os.path.getsize(model_path) / (1024*1024)
+                    print(f"--- 📁 Model file size: {file_size:.1f} MB ---")
+                    success = True
+                except Exception as e:
+                    print(f"--- ❌ Hugging Face Hub download failed: {e} ---")
+            
+            if not success:
+                print("--- ❌ All download attempts failed. ---")
                 return False
+                
+            return True
+            
         except Exception as e:
             print(f"--- ❌ An exception occurred during download: {e} ---")
             return False

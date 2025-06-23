@@ -7,4 +7,5 @@ torch==2.1.0
 torchvision==0.16.0
 numpy==1.24.3
 slowapi==0.1.9
-redis==5.0.1 
+redis==5.0.1
+huggingface_hub==0.19.4 
