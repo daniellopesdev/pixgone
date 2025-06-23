@@ -46,7 +46,8 @@ def try_import_custom_ormbg():
     try:
         from ormbg import ORMBGProcessor
         print("✅ Custom ORMBG imported successfully")
-        processor = ORMBGProcessor()
+        model_path = os.environ.get("ORMBG_MODEL_PATH", os.path.expanduser("~/.ormbg/ormbg.pth"))
+        processor = ORMBGProcessor(model_path)
         return processor.process_image
     except ImportError as e:
         print(f"❌ Custom ORMBG import failed: {e}")
