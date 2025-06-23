@@ -128,7 +128,8 @@ def try_import_custom_ormbg():
     try:
         from ormbg import ORMBGProcessor
         print("✅ Custom ORMBG imported successfully")
-        model_path = os.environ.get("ORMBG_MODEL_PATH", os.path.expanduser("~/.ormbg/ormbg.pth"))
+        # Default path is now inside the app's working directory
+        model_path = os.environ.get("ORMBG_MODEL_PATH", "/app/models/ormbg/ormbg.pth")
         print(f"🔍 Looking for model at: {model_path}")
         
         # Check if file exists

@@ -17,13 +17,13 @@ COPY ormbg/ ./ormbg/
 # Debug: Show what's in the app directory
 RUN ls -la
 
-# Create the model directory and download the model file
-RUN mkdir -p /root/.ormbg
-RUN wget -O /root/.ormbg/ormbg.pth https://huggingface.co/schirrmacher/ormbg/resolve/main/models/ormbg.pth
+# Create the model directory inside the app's working directory and download the model
+RUN mkdir -p /app/models/ormbg
+RUN wget -O /app/models/ormbg/ormbg.pth https://huggingface.co/schirrmacher/ormbg/resolve/main/models/ormbg.pth
 
 # Debug: Verify the model file was downloaded
-RUN ls -la /root/.ormbg/
-RUN echo "Model file size:" && ls -lh /root/.ormbg/ormbg.pth
+RUN ls -la /app/models/ormbg/
+RUN echo "Model file size:" && ls -lh /app/models/ormbg/ormbg.pth
 
 # Set PYTHONPATH to include the current directory
 ENV PYTHONPATH=/app
