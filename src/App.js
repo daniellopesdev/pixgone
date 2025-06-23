@@ -73,7 +73,10 @@ function App() {
 
   // Fetch rate limit info on component mount
   useEffect(() => {
-    fetchRateLimitInfo();
+    // Only try to fetch rate limit info if we're not in development
+    if (process.env.NODE_ENV === 'production') {
+      fetchRateLimitInfo();
+    }
   }, []);
 
   const fetchRateLimitInfo = async () => {
@@ -82,15 +85,21 @@ function App() {
       if (response.ok) {
         const data = await response.json();
         setRateLimitInfo(data);
+      } else if (response.status === 404) {
+        // Endpoint not available (old server version), hide rate limit info
+        console.log("Rate limit info endpoint not available");
+        setRateLimitInfo(null);
       }
     } catch (error) {
       console.log("Could not fetch rate limit info:", error);
+      setRateLimitInfo(null);
     }
   };
 
   const handleFileSelect = async (event) => {
     const file = event.target.files[0];
     if (file) {
+      setSelectedFile(file);
       await processImage(file);
     }
   };
@@ -99,6 +108,7 @@ function App() {
     event.preventDefault();
     const file = event.dataTransfer.files[0];
     if (file) {
+      setSelectedFile(file);
       await processImage(file);
     }
   };
@@ -271,11 +281,13 @@ function App() {
               <div className="image-comparison">
                 <div className="image-container">
                   <h3>Original</h3>
-                  <img
-                    src={URL.createObjectURL(selectedFile)}
-                    alt="Original"
-                    className="preview-image"
-                  />
+                  {selectedFile && (
+                    <img
+                      src={URL.createObjectURL(selectedFile)}
+                      alt="Original"
+                      className="preview-image"
+                    />
+                  )}
                 </div>
 
                 <div className="image-container">
