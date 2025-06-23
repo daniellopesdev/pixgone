@@ -35,14 +35,27 @@ function App() {
   const progressInterval = useRef(null);
   const stuckTimeout = useRef(null);
 
-  // AdBlock detection
+  // AdBlock detection (improved)
   useEffect(() => {
-    setTimeout(() => {
-      const ad = document.querySelector('.adsbygoogle');
-      if (!ad || ad.offsetHeight === 0) {
+    let attempts = 0;
+    let detected = false;
+    function checkAdBlock() {
+      const adScript = document.querySelector('script[src*="adsbygoogle.js"]');
+      const adElements = document.querySelectorAll('.adsbygoogle');
+      const adVisible = Array.from(adElements).some(el => el.offsetHeight > 0);
+      if (adScript && adVisible) {
+        detected = false;
+        setAdblockOpen(false);
+      } else if (attempts < 3) {
+        attempts++;
+        setTimeout(checkAdBlock, 1500);
+      } else {
+        detected = true;
         setAdblockOpen(true);
       }
-    }, 2000);
+    }
+    setTimeout(checkAdBlock, 1500);
+    return () => { detected = true; };
   }, []);
 
   // Progress stuck message

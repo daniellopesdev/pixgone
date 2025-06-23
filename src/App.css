@@ -326,11 +326,12 @@
   background: #fff;
   border-radius: 16px;
   padding: 2.5rem 2rem 2rem 2rem;
-  box-shadow: 0 8px 32px rgba(44, 62, 80, 0.25);
+  box-shadow: 0 8px 32px rgba(0, 12, 255, 0.15);
   max-width: 350px;
   text-align: center;
   position: relative;
   animation: fadein 0.4s;
+  border: 2px solid #000cff;
 }
 
 .adblock-emoji {
@@ -340,7 +341,8 @@
 
 .adblock-modal h2 {
   margin: 0 0 0.5rem 0;
-  color: #764ba2;
+  color: #000cff;
+  font-weight: 800;
 }
 
 .adblock-modal p {
@@ -350,7 +352,7 @@
 }
 
 .modal-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #000cff 0%, #4f8cff 100%);
   color: white;
   border: none;
   padding: 0.8rem 2rem;
@@ -359,10 +361,11 @@
   cursor: pointer;
   font-weight: 600;
   transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(0, 12, 255, 0.12);
 }
 
 .modal-btn:hover {
-  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  background: linear-gradient(135deg, #4f8cff 0%, #000cff 100%);
   transform: scale(1.05);
 }
 
