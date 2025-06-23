@@ -12,8 +12,8 @@ const AdblockModal = ({ open, onClose }) => (
         <div className="adblock-emoji">🦄🚫</div>
         <h2>AdBlock Detected!</h2>
         <p>
-          Hey! Please disable your ad blocker to use <b>pixGone</b>.<br/>
-          We only show a few ads to keep it free<br/>
+          Hey! Please disable your ad blocker to use <b>pixGone</b>.<br />
+          We only show a few ads to keep it free<br />
           (and slightly better than some overpriced apps).
         </p>
         <button className="modal-btn" onClick={onClose}>Okay, I'll disable it!</button>
@@ -153,7 +153,7 @@ function App() {
     <div className="App">
       <AdblockModal open={adblockOpen} onClose={() => setAdblockOpen(false)} />
       <Header />
-      
+
       <main className="main-content">
         <div className="container">
           <div className="hero-section">
@@ -199,10 +199,12 @@ function App() {
               <div className="progress-bar-container">
                 <div className="progress-bar" style={{ width: `${progress}%` }} />
                 <span className="progress-label">{progress}%</span>
-                {showStuckMsg && (
-                  <div className="progress-stuck-msg">It's still processing, don't worry.</div>
-                )}
+
               </div>
+            )}
+
+            {showStuckMsg && (
+              <div className="progress-stuck-msg">It's still processing, don't worry.</div>
             )}
 
             {error && <div className="error-message">{error}</div>}
@@ -213,27 +215,27 @@ function App() {
               <div className="image-comparison">
                 <div className="image-container">
                   <h3>Original</h3>
-                  <img 
-                    src={URL.createObjectURL(selectedFile)} 
-                    alt="Original" 
+                  <img
+                    src={URL.createObjectURL(selectedFile)}
+                    alt="Original"
                     className="preview-image"
                   />
                 </div>
-                
+
                 <div className="image-container">
                   <h3>Background Removed</h3>
-                  <div 
+                  <div
                     className="processed-image-container"
                     style={{ backgroundColor: backgroundColor }}
                   >
-                    <img 
-                      src={processedImage} 
-                      alt="Processed" 
+                    <img
+                      src={processedImage}
+                      alt="Processed"
                       className="preview-image"
                     />
-                    <ColorPicker 
-                      onColorChange={setBackgroundColor} 
-                      currentColor={backgroundColor} 
+                    <ColorPicker
+                      onColorChange={setBackgroundColor}
+                      currentColor={backgroundColor}
                     />
                   </div>
                 </div>
