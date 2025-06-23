@@ -1,8 +1,26 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import ColorPicker from './components/ColorPicker';
+import AdBanner from './components/AdBanner';
 import './App.css';
+
+const AdblockModal = ({ open, onClose }) => (
+  open ? (
+    <div className="adblock-modal-overlay">
+      <div className="adblock-modal">
+        <div className="adblock-emoji">🦄🚫</div>
+        <h2>AdBlock Detected!</h2>
+        <p>
+          Hey! Please disable your ad blocker to use <b>pixGone</b>.<br/>
+          We only show a few ads to keep it free<br/>
+          (and slightly better than some overpriced apps).
+        </p>
+        <button className="modal-btn" onClick={onClose}>Okay, I'll disable it!</button>
+      </div>
+    </div>
+  ) : null
+);
 
 function App() {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -11,8 +29,32 @@ function App() {
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState('');
   const [backgroundColor, setBackgroundColor] = useState('#ffffff');
+  const [showStuckMsg, setShowStuckMsg] = useState(false);
+  const [adblockOpen, setAdblockOpen] = useState(false);
   const fileInputRef = useRef(null);
   const progressInterval = useRef(null);
+  const stuckTimeout = useRef(null);
+
+  // AdBlock detection
+  useEffect(() => {
+    setTimeout(() => {
+      const ad = document.querySelector('.adsbygoogle');
+      if (!ad || ad.offsetHeight === 0) {
+        setAdblockOpen(true);
+      }
+    }, 2000);
+  }, []);
+
+  // Progress stuck message
+  useEffect(() => {
+    if (isProcessing && progress >= 90 && progress < 100) {
+      stuckTimeout.current = setTimeout(() => setShowStuckMsg(true), 3000);
+    } else {
+      setShowStuckMsg(false);
+      clearTimeout(stuckTimeout.current);
+    }
+    return () => clearTimeout(stuckTimeout.current);
+  }, [isProcessing, progress]);
 
   const handleFileSelect = (event) => {
     const file = event.target.files[0];
@@ -109,21 +151,18 @@ function App() {
 
   return (
     <div className="App">
+      <AdblockModal open={adblockOpen} onClose={() => setAdblockOpen(false)} />
       <Header />
       
       <main className="main-content">
         <div className="container">
           <div className="hero-section">
-            <h1>Remove Background from Images</h1>
+            <h1>pixGone, slightly better than some overpriced apps.</h1>
             <p>Professional AI-powered background removal. Free, fast, and easy to use.</p>
           </div>
 
           {/* Top Ad Space */}
-          <div className="ad-section">
-            <div className="ad-placeholder">
-              <p>Advertisement Space</p>
-            </div>
-          </div>
+          <AdBanner adSlot="YOUR_TOP_AD_SLOT" />
 
           <div className="upload-section">
             <div className="upload-area" onDrop={handleDrop} onDragOver={handleDragOver}>
@@ -160,6 +199,9 @@ function App() {
               <div className="progress-bar-container">
                 <div className="progress-bar" style={{ width: `${progress}%` }} />
                 <span className="progress-label">{progress}%</span>
+                {showStuckMsg && (
+                  <div className="progress-stuck-msg">It's still processing, don't worry.</div>
+                )}
               </div>
             )}
 
@@ -209,11 +251,7 @@ function App() {
           )}
 
           {/* Bottom Ad Space */}
-          <div className="ad-section">
-            <div className="ad-placeholder">
-              <p>Advertisement Space</p>
-            </div>
-          </div>
+          <AdBanner adSlot="YOUR_BOTTOM_AD_SLOT" />
         </div>
       </main>
 

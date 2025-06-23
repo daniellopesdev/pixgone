@@ -1,0 +1,24 @@
+.ad-banner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 1rem 0;
+  min-height: 90px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.ad-banner ins {
+  display: block;
+  width: 100%;
+  max-width: 728px;
+  height: 90px;
+}
+
+@media (max-width: 768px) {
+  .ad-banner ins {
+    max-width: 320px;
+    height: 50px;
+  }
+} 
