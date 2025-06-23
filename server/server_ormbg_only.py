@@ -28,9 +28,16 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # Add CORS middleware with more permissive settings
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for now
+    allow_origins=[
+        "https://www.pixgone.com",
+        "https://pixgone.com", 
+        "https://*.pixgone.com",
+        "http://localhost:3000",  # For local development
+        "http://localhost:3001",  # Alternative local port
+        "*"  # Fallback for any other origins
+    ],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -255,6 +262,19 @@ def simple_background_removal(image):
         print(f"Background removal failed: {e}")
         # Return original image with alpha channel
         return image.convert('RGBA')
+
+@app.options("/{full_path:path}")
+async def options_handler(request: Request):
+    """Handle CORS preflight requests"""
+    return Response(
+        status_code=200,
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+            "Access-Control-Allow-Headers": "*",
+            "Access-Control-Allow-Credentials": "true",
+        }
+    )
 
 @app.post("/remove_background/")
 @limiter.limit(RATE_LIMIT)
