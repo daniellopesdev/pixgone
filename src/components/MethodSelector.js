@@ -15,7 +15,7 @@ const MethodSelector = ({ selectedMethod, onMethodChange }) => {
         <option value="ormbg">ormbg (Fast & Reliable)</option>
         <option value="bria_rmbg">Bria RMBG1.4 (High Quality)</option>
       </select>
-    </div>
+                  </div>
   );
 };
 

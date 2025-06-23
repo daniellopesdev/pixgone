@@ -33,9 +33,39 @@ function App() {
   const [adblockOpen, setAdblockOpen] = useState(false);
   const [rateLimitInfo, setRateLimitInfo] = useState(null);
   const [rateLimitError, setRateLimitError] = useState(null);
+  const [currentMessage, setCurrentMessage] = useState('');
   const fileInputRef = useRef(null);
   const progressInterval = useRef(null);
   const stuckTimeout = useRef(null);
+
+  // Funny waiting messages
+  const waitingMessages = [
+    "🎭 Teaching pixels to disappear like magic...",
+    "🔮 Consulting with the background removal wizards...",
+    "🚀 Launching pixels into the void...",
+    "🎨 AI is having an artistic moment...",
+    "🤖 Robots are arguing about which pixels to keep...",
+    "☕ AI is taking a coffee break... just kidding, still working!",
+    "🎪 Performing digital circus tricks...",
+    "🧙‍♂️ Casting background removal spells...",
+    "🎯 Playing hide and seek with backgrounds...",
+    "🌪️ Creating a pixel tornado...",
+    "🎮 AI is in the zone, please don't disturb...",
+    "🍕 Better than waiting for pizza delivery!",
+    "🎪 The pixels are doing backflips...",
+    "🚁 Sending backgrounds to another dimension...",
+    "🎨 Pablo Pic-AI-so is working on your image...",
+    "🔍 Looking for backgrounds... none found!",
+    "🎭 Backgrounds are staging a dramatic exit...",
+    "🌊 Surfing through layers of pixels...",
+    "🎪 The greatest pixel show on earth!",
+    "🤹‍♂️ Juggling millions of pixels...",
+    "🎬 Directing the great background escape...",
+    "🔥 Making backgrounds vanish faster than your motivation on Monday!",
+    "🎯 Precision pixel removal in progress...",
+    "🌈 Creating transparency magic...",
+    "🎪 The AI circus is in town!"
+  ];
 
   // AdBlock detection (improved)
   useEffect(() => {
@@ -78,6 +108,29 @@ function App() {
       fetchRateLimitInfo();
     }
   }, []);
+
+  // Rotate through funny messages during processing
+  useEffect(() => {
+    let messageInterval;
+    if (isProcessing) {
+      setCurrentMessage(waitingMessages[0]);
+      messageInterval = setInterval(() => {
+        setCurrentMessage(prev => {
+          const currentIndex = waitingMessages.indexOf(prev);
+          const nextIndex = (currentIndex + 1) % waitingMessages.length;
+          return waitingMessages[nextIndex];
+        });
+      }, 2000); // Change message every 2 seconds
+    } else {
+      setCurrentMessage('');
+    }
+
+    return () => {
+      if (messageInterval) {
+        clearInterval(messageInterval);
+      }
+    };
+  }, [isProcessing]);
 
   const fetchRateLimitInfo = async () => {
     try {
@@ -270,7 +323,7 @@ function App() {
                   <div className="progress-fill" style={{ width: `${progress}%` }}></div>
                 </div>
                 <p className="processing-text">
-                  {showStuckMsg ? "Still processing..." : "Processing your image..."}
+                  {showStuckMsg ? "Still processing..." : currentMessage}
                 </p>
               </div>
             )}
