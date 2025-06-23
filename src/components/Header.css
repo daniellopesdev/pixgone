@@ -1,6 +1,6 @@
 .header {
-  background: #000cff;
-  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+  background: #fff;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.10);
   position: sticky;
   top: 0;
   z-index: 1000;
@@ -19,16 +19,16 @@
   height: 48px;
   width: 48px;
   border-radius: 12px;
-  background: #000cff;
+  background: #fff;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
 .logo-text {
   font-size: 2rem;
   font-weight: 800;
-  color: #fff;
+  color: #000cff;
   letter-spacing: 1px;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  text-shadow: 0 2px 8px rgba(0,0,0,0.06);
   font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
 }
 
