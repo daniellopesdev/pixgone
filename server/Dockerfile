@@ -17,13 +17,20 @@ COPY ormbg/ ./ormbg/
 # Debug: Show what's in the app directory
 RUN ls -la
 
-# Create the model directory inside the app's working directory and download the model
-RUN mkdir -p /app/models/ormbg
-RUN wget -O /app/models/ormbg/ormbg.pth https://huggingface.co/schirrmacher/ormbg/resolve/main/models/ormbg.pth
+# Create the model directory in /opt and download the model
+RUN echo "--- Creating directory /opt/models/ormbg ---"
+RUN mkdir -p /opt/models/ormbg
 
-# Debug: Verify the model file was downloaded
-RUN ls -la /app/models/ormbg/
-RUN echo "Model file size:" && ls -lh /app/models/ormbg/ormbg.pth
+RUN echo "--- Downloading model file ---"
+RUN wget -O /opt/models/ormbg/ormbg.pth https://huggingface.co/schirrmacher/ormbg/resolve/main/models/ormbg.pth
+
+# --- DETAILED PATH VERIFICATION DURING BUILD ---
+RUN echo "--- Verifying root directory (/) ---" && ls -la /
+RUN echo "--- Verifying /opt directory ---" && ls -la /opt
+RUN echo "--- Verifying /opt/models directory ---" && ls -la /opt/models
+RUN echo "--- Verifying /opt/models/ormbg directory ---" && ls -la /opt/models/ormbg
+RUN echo "--- Verifying model file with size ---" && ls -lh /opt/models/ormbg/ormbg.pth
+# --- END DETAILED PATH VERIFICATION ---
 
 # Set PYTHONPATH to include the current directory
 ENV PYTHONPATH=/app

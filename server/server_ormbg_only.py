@@ -128,33 +128,27 @@ def try_import_custom_ormbg():
     try:
         from ormbg import ORMBGProcessor
         print("✅ Custom ORMBG imported successfully")
-        # Default path is now inside the app's working directory
-        model_path = os.environ.get("ORMBG_MODEL_PATH", "/app/models/ormbg/ormbg.pth")
+        # Default path is now inside the /opt directory
+        model_path = os.environ.get("ORMBG_MODEL_PATH", "/opt/models/ormbg/ormbg.pth")
         print(f"🔍 Looking for model at: {model_path}")
         
-        # Check if file exists
-        if os.path.exists(model_path):
-            print(f"✅ Model file found at: {model_path}")
-            file_size = os.path.getsize(model_path)
-            print(f"📁 Model file size: {file_size / (1024*1024):.1f} MB")
-        else:
-            print(f"❌ Model file NOT found at: {model_path}")
-            # List contents of the directory
-            model_dir = os.path.dirname(model_path)
-            if os.path.exists(model_dir):
-                print(f"📂 Contents of {model_dir}:")
-                try:
-                    for item in os.listdir(model_dir):
-                        item_path = os.path.join(model_dir, item)
-                        if os.path.isfile(item_path):
-                            size = os.path.getsize(item_path)
-                            print(f"  📄 {item} ({size / (1024*1024):.1f} MB)")
-                        else:
-                            print(f"  📁 {item}/")
-                except Exception as e:
-                    print(f"  ❌ Error listing directory: {e}")
+        # --- DETAILED RUNTIME PATH DEBUGGING ---
+        path_parts = model_path.split(os.sep)
+        for i in range(2, len(path_parts) + 1):
+            current_path = os.sep.join(path_parts[:i])
+            if os.path.exists(current_path):
+                print(f"✅ Path exists at runtime: {current_path}")
+                if i == len(path_parts) and os.path.isfile(current_path):
+                     print(f"  📄 File size: {os.path.getsize(current_path) / (1024*1024):.1f} MB")
             else:
-                print(f"❌ Directory does not exist: {model_dir}")
+                print(f"❌ Path NOT found at runtime: {current_path}")
+                parent_path = os.path.dirname(current_path)
+                if os.path.exists(parent_path):
+                    print(f"  📂 Contents of parent '{parent_path}': {os.listdir(parent_path)}")
+                else:
+                    print(f"  📂 Parent directory '{parent_path}' also does not exist.")
+                break # Stop checking if a part of the path is missing
+        # --- END DETAILED RUNTIME PATH DEBUGGING ---
         
         processor = ORMBGProcessor(model_path)
         return processor.process_image
