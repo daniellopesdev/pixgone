@@ -414,12 +414,42 @@ function App() {
         <div className="preview-modal" onClick={(e) => e.stopPropagation()}>
           <div className="preview-modal-header">
             <h3>Image Preview</h3>
-            <button 
-              className="preview-close-btn"
-              onClick={() => { setShowPreviewModal(false); setSmoothEdges(false); }}
-            >
-              ×
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ fontSize: '14px', color: '#64748b' }}>Smooth Edges</span>
+                <button
+                  className={`toggle-btn ${smoothEdges ? 'active' : ''}`}
+                  onClick={() => setSmoothEdges(!smoothEdges)}
+                  style={{
+                    width: '40px',
+                    height: '20px',
+                    borderRadius: '10px',
+                    border: 'none',
+                    background: smoothEdges ? '#2563eb' : '#e2e8f0',
+                    cursor: 'pointer',
+                    position: 'relative',
+                    transition: 'background 0.2s'
+                  }}
+                >
+                  <div style={{
+                    width: '16px',
+                    height: '16px',
+                    borderRadius: '50%',
+                    background: 'white',
+                    position: 'absolute',
+                    top: '2px',
+                    left: smoothEdges ? '22px' : '2px',
+                    transition: 'left 0.2s'
+                  }} />
+                </button>
+              </div>
+              <button 
+                className="preview-close-btn"
+                onClick={() => { setShowPreviewModal(false); setSmoothEdges(false); }}
+              >
+                ×
+              </button>
+            </div>
           </div>
           <div className="preview-content">
             <div className="preview-image-container">
@@ -439,13 +469,6 @@ function App() {
               </div>
             </div>
             <div className="preview-controls">
-              <div className="preview-color-section">
-                <h4>Test Background Colors</h4>
-                <ColorPicker
-                  onColorChange={setBackgroundColor}
-                  currentColor={backgroundColor}
-                />
-              </div>
               <div className="preview-actions">
                 <button className="btn-primary" onClick={downloadImage}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -636,12 +659,17 @@ function App() {
                                 <path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
                               </svg>
                             </button>
-                            <button
-                              className="btn-secondary"
-                              style={{ marginTop: 8, width: '100%' }}
-                              onClick={() => { setShowPreviewModal(true); setSmoothEdges(true); }}
+                            {/* Smooth Edges Button */}
+                            <button 
+                              className="smooth-edges-btn"
+                              onClick={() => setShowPreviewModal(true)}
+                              title="Smooth edges"
                             >
-                              Enable Smooth Edges
+                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v6m0 6v6"/>
+                                <path d="M1 12h6m6 0h6"/>
+                              </svg>
                             </button>
                           </div>
                           <ColorPicker
