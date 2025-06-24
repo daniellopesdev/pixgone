@@ -519,36 +519,29 @@ function App() {
             )}
 
             {isProcessing && (
-              <div className="processing-section">
+              <div className="processing-section minimal">
                 <div className="processing-header">
                   <div className="loading-spinner"></div>
-                  <h3>Processing Your Image...</h3>
+                  <h3>Processing Your Image…</h3>
                 </div>
-                
-                <div className="progress-container">
-                  <div className="progress-bar">
-                    <div className="progress-fill" style={{ width: `${progress}%` }}></div>
-                    <div className="progress-text">{progress}%</div>
+                <div className="progress-container minimal">
+                  <div className="progress-bar minimal">
+                    <div className="progress-fill minimal" style={{ width: `${progress}%` }}></div>
+                    <div className="progress-text minimal">{progress}%</div>
                   </div>
                 </div>
-
-                <div className="waiting-message-container">
-                  <p className="processing-text animated-text">
-                    {currentMessage}
-                  </p>
-                  {showStuckMsg && (
-                    <div className="stuck-message">
-                      <div className="stuck-spinner"></div>
-                      <p>Almost there! The AI is putting the finishing touches...</p>
-                    </div>
-                  )}
+                <div className="processing-status-message">
+                  {progress < 30 && <span className="processing-status-text">Uploading…</span>}
+                  {progress >= 30 && progress < 90 && <span className="processing-status-text">AI is working…</span>}
+                  {progress >= 90 && progress < 100 && <span className="processing-status-text">Finalizing…</span>}
+                  {progress === 100 && <span className="processing-status-text">Done!</span>}
                 </div>
-
-                <div className="processing-status">
-                  {progress < 30 && <span className="status-badge uploading">📤 Uploading...</span>}
-                  {progress >= 30 && progress < 90 && <span className="status-badge processing">🧠 AI Processing...</span>}
-                  {progress >= 90 && <span className="status-badge finalizing">✨ Finalizing...</span>}
-                </div>
+                {showStuckMsg && (
+                  <div className="stuck-message minimal">
+                    <div className="stuck-spinner"></div>
+                    <span>Almost there! The AI is putting the finishing touches…</span>
+                  </div>
+                )}
               </div>
             )}
           </div>
