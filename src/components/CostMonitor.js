@@ -58,47 +58,46 @@ const CostMonitor = ({ compact = false }) => {
     return (
       <div className={`cost-monitor loading ${compact ? 'compact' : ''}`}>
         <div className="cost-spinner"></div>
-        <span>Loading costs...</span>
+        <span>Loading...</span>
       </div>
     );
   }
 
   if (compact) {
-    // Minimal, single-line, icon + total only
     return (
       <div className="cost-monitor compact">
-        <span className="cost-label" title="Server Costs">💸</span>
+        <span className="cost-label">Server Cost</span>
         <span className="cost-value total">{formatCurrency(costs.total_cost || 0)}</span>
       </div>
     );
   }
 
   return (
-    <div className={`cost-monitor`}>
+    <div className="cost-monitor">
       <div className="cost-header">
-        <h4>Real-time Server Costs</h4>
-        <span className="cost-subtitle">This month (transparent pricing)</span>
+        <h4>Server Costs</h4>
+        <span className="cost-subtitle">Monthly usage transparency</span>
       </div>
       {error ? (
         <div className="cost-error">
-          <span>⚠️ {error}</span>
+          <span>{error}</span>
         </div>
       ) : (
         <div className="cost-breakdown">
           <div className="cost-item">
-            <span className="cost-label">🧠 CPU:</span>
+            <span className="cost-label">CPU</span>
             <span className="cost-value">{formatCurrency(costs.cpu_cost || 0)}</span>
           </div>
           <div className="cost-item">
-            <span className="cost-label">💾 Memory:</span>
+            <span className="cost-label">Memory</span>
             <span className="cost-value">{formatCurrency(costs.memory_cost || 0)}</span>
           </div>
           <div className="cost-item">
-            <span className="cost-label">🌐 Network:</span>
+            <span className="cost-label">Network</span>
             <span className="cost-value">{formatCurrency(costs.network_cost || 0)}</span>
           </div>
           <div className="cost-total">
-            <span className="cost-label">📊 Total:</span>
+            <span className="cost-label">Total</span>
             <span className="cost-value total">{formatCurrency(costs.total_cost || 0)}</span>
           </div>
         </div>
@@ -106,10 +105,10 @@ const CostMonitor = ({ compact = false }) => {
       {lastUpdated && !compact && (
         <div className="cost-footer">
           <span className="cost-timestamp">
-            Updated at {formatTime(lastUpdated)}
+            Updated {formatTime(lastUpdated)}
           </span>
-          <button className="refresh-btn" onClick={fetchCosts} title="Refresh costs">
-            🔄
+          <button className="refresh-btn" onClick={fetchCosts} title="Refresh">
+            ↻
           </button>
         </div>
       )}

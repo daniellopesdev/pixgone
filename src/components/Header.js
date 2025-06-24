@@ -35,7 +35,6 @@ const Header = () => {
               onClick={handleGitHub}
               title="View source code"
             >
-              <span className="btn-icon">⭐</span>
               <span className="btn-text">GitHub</span>
             </button>
             
@@ -44,7 +43,6 @@ const Header = () => {
               onClick={handleDonate}
               title="Support this project"
             >
-              <span className="btn-icon">☕</span>
               <span className="btn-text">Donate</span>
             </button>
           </div>

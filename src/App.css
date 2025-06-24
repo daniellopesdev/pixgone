@@ -75,8 +75,11 @@
 }
 
 .upload-icon {
-  font-size: 4rem;
+  font-size: 3rem;
   margin-bottom: 1rem;
+  color: #bdc3c7;
+  font-weight: 300;
+  line-height: 1;
 }
 
 .upload-content p {

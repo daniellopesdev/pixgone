@@ -463,10 +463,10 @@ function App() {
           {rateLimitInfo && (
             <div className="rate-limit-status">
               <div className="rate-limit-info">
-                <span>📊 Requests today: {rateLimitInfo.requests_today}/{rateLimitInfo.daily_limit}</span>
-                <span>🔄 Remaining: {rateLimitInfo.remaining_requests}</span>
+                <span>Requests today: {rateLimitInfo.requests_today}/{rateLimitInfo.daily_limit}</span>
+                <span>Remaining: {rateLimitInfo.remaining_requests}</span>
                 {rateLimitInfo.is_blocked && (
-                  <span className="blocked-warning">🚫 Your IP is blocked for abuse</span>
+                  <span className="blocked-warning">Your IP is blocked for abuse</span>
                 )}
               </div>
             </div>
@@ -476,7 +476,7 @@ function App() {
           <div className="transparency-section">
             <CostMonitor />
             <div className="transparency-note">
-              <h3>🔒 Transparent Pricing</h3>
+              <h3>Transparent Pricing</h3>
               <p>
                 We believe in full transparency. These are our real server costs for running this AI service.
                 Your usage helps cover these expenses and keeps the service free for everyone.
@@ -496,7 +496,7 @@ function App() {
                 disabled={adblockOpen}
               />
               <div className="upload-content">
-                <div className="upload-icon">📁</div>
+                <div className="upload-icon">+</div>
                 <p>Drag & drop an image here or click to browse</p>
                 <p className="file-info">Max file size: 10MB</p>
               </div>
@@ -507,12 +507,12 @@ function App() {
                 <p>{error}</p>
                 {rateLimitError && rateLimitError.code === 'DAILY_LIMIT_EXCEEDED' && (
                   <p className="rate-limit-help">
-                    💡 Try again tomorrow.
+                    Try again tomorrow.
                   </p>
                 )}
                 {rateLimitError && rateLimitError.code === 'IP_BLOCKED' && (
                   <p className="rate-limit-help">
-                    💡 Your IP has been blocked due to excessive usage. Try again tomorrow.
+                    Your IP has been blocked due to excessive usage. Try again tomorrow.
                   </p>
                 )}
               </div>
