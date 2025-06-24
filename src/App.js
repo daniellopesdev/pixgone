@@ -469,6 +469,13 @@ function App() {
               </div>
             </div>
             <div className="preview-controls">
+              <div className="preview-color-section">
+                <h4>Test Background Colors</h4>
+                <ColorPicker
+                  onColorChange={setBackgroundColor}
+                  currentColor={backgroundColor}
+                />
+              </div>
               <div className="preview-actions">
                 <button className="btn-primary" onClick={downloadImage}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
