@@ -8,7 +8,6 @@ import DonationStats from './components/DonationStats';
 import DonateButton from './components/DonateButton';
 import KofiWidgetEnhanced from './components/KofiWidgetEnhanced';
 import SmoothEdgesImage from './components/SmoothEdgesImage';
-import SmoothEdgesPreviewSlider from './components/SmoothEdgesPreviewSlider';
 import './App.css';
 
 const AdblockModal = ({ open, onBypass }) => (
@@ -74,7 +73,6 @@ function App() {
   const [currentServerCost, setCurrentServerCost] = useState(0);
   const [donateModalOpen, setDonateModalOpen] = useState(false);
   const [smoothEdges, setSmoothEdges] = useState(false);
-  const [showSmoothEdgesPreview, setShowSmoothEdgesPreview] = useState(false);
   const fileInputRef = useRef(null);
   const progressInterval = useRef(null);
   const stuckTimeout = useRef(null);
@@ -412,32 +410,34 @@ function App() {
   // Image Preview Modal Component
   const ImagePreviewModal = () => (
     showPreviewModal && processedImage ? (
-      <div className="preview-modal-overlay" onClick={() => setShowPreviewModal(false)}>
+      <div className="preview-modal-overlay" onClick={() => { setShowPreviewModal(false); setSmoothEdges(false); }}>
         <div className="preview-modal" onClick={(e) => e.stopPropagation()}>
           <div className="preview-modal-header">
             <h3>Image Preview</h3>
             <button 
               className="preview-close-btn"
-              onClick={() => setShowPreviewModal(false)}
+              onClick={() => { setShowPreviewModal(false); setSmoothEdges(false); }}
             >
               ×
             </button>
           </div>
-          
           <div className="preview-content">
             <div className="preview-image-container">
               <div
                 className="preview-background"
                 style={{ backgroundColor: backgroundColor }}
               >
-                <img
-                  src={processedImage}
-                  alt="Enlarged Preview"
-                  className="preview-image"
-                />
+                {smoothEdges ? (
+                  <SmoothEdgesImage src={processedImage} blurRadius={2} edgeWidth={5} />
+                ) : (
+                  <img
+                    src={processedImage}
+                    alt="Enlarged Preview"
+                    className="preview-image"
+                  />
+                )}
               </div>
             </div>
-            
             <div className="preview-controls">
               <div className="preview-color-section">
                 <h4>Test Background Colors</h4>
@@ -446,7 +446,6 @@ function App() {
                   currentColor={backgroundColor}
                 />
               </div>
-              
               <div className="preview-actions">
                 <button className="btn-primary" onClick={downloadImage}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -619,15 +618,11 @@ function App() {
                         <h4 className="image-label">Background Removed</h4>
                         <div className="image-wrapper processed">
                           <div className="processed-background" style={{ backgroundColor: backgroundColor }}>
-                            {smoothEdges ? (
-                              <SmoothEdgesImage src={processedImage} blurRadius={2} edgeWidth={5} />
-                            ) : (
-                              <img
-                                src={processedImage}
-                                alt="Processed"
-                                className="comparison-image"
-                              />
-                            )}
+                            <img
+                              src={processedImage}
+                              alt="Processed"
+                              className="comparison-image"
+                            />
                             {/* Enlarge Button Overlay */}
                             <button 
                               className="enlarge-btn"
@@ -644,9 +639,9 @@ function App() {
                             <button
                               className="btn-secondary"
                               style={{ marginTop: 8, width: '100%' }}
-                              onClick={() => setShowSmoothEdgesPreview(true)}
+                              onClick={() => { setShowPreviewModal(true); setSmoothEdges(true); }}
                             >
-                              Compare Smooth Edges
+                              Enable Smooth Edges
                             </button>
                           </div>
                           <ColorPicker
@@ -655,12 +650,6 @@ function App() {
                           />
                         </div>
                       </div>
-                    </div>
-
-                    <div style={{ textAlign: 'center', margin: '1rem 0' }}>
-                      <button className="btn-secondary" onClick={() => setSmoothEdges(v => !v)}>
-                        {smoothEdges ? 'Disable Smooth Edges' : 'Enable Smooth Edges'}
-                      </button>
                     </div>
 
                     <div className="action-buttons-modern">
@@ -785,13 +774,6 @@ function App() {
       
       <DonateModal open={donateModalOpen} onClose={() => setDonateModalOpen(false)} />
       <KofiWidgetEnhanced />
-
-      {showSmoothEdgesPreview && processedImage && (
-        <SmoothEdgesPreviewSlider
-          src={processedImage}
-          onClose={() => setShowSmoothEdgesPreview(false)}
-        />
-      )}
     </div>
   );
 }
