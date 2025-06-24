@@ -462,6 +462,28 @@ function App() {
               <div className="floating-element element-1"></div>
               <div className="floating-element element-2"></div>
               <div className="floating-element element-3"></div>
+              
+              {/* Pixel Grid Animation */}
+              <div className="pixel-grid-animation">
+                {Array.from({ length: 100 }, (_, i) => {
+                  const row = Math.floor(i / 10);
+                  const col = i % 10;
+                  const distanceFromCenter = Math.sqrt(Math.pow(row - 4.5, 2) + Math.pow(col - 4.5, 2));
+                  const waveDelay = distanceFromCenter * 0.3;
+                  
+                  return (
+                    <div 
+                      key={i} 
+                      className="pixel" 
+                      style={{
+                        '--delay': `${waveDelay + Math.random() * 2}s`,
+                        '--duration': `${3 + Math.random() * 2}s`,
+                        '--intensity': Math.random() > 0.7 ? '1' : '0.8'
+                      }}
+                    ></div>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
