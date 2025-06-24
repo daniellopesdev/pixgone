@@ -14,10 +14,29 @@ from collections import defaultdict
 import threading
 import urllib.request
 import shutil
+import requests
+import logging
+from typing import Optional
 
 print("=== Starting PixGone Server ===")
 print(f"Python version: {sys.version}")
 print(f"Current directory: {os.getcwd()}")
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Railway GraphQL API configuration
+RAILWAY_API_URL = "https://backboard.railway.app/graphql/v2"
+RAILWAY_API_TOKEN = os.getenv("RAILWAY_API_TOKEN")
+RAILWAY_PROJECT_ID = os.getenv("RAILWAY_PROJECT_ID")
+
+# Railway pricing (per Railway docs)
+RAILWAY_PRICING = {
+    "CPU_USAGE": 20.0,  # $20 per vCPU per month
+    "MEMORY_USAGE_GB": 10.0,  # $10 per GB per month  
+    "NETWORK_TX_GB": 0.05,  # $0.05 per GB
+}
 
 # Initialize rate limiter
 limiter = Limiter(key_func=get_remote_address)
@@ -113,6 +132,89 @@ cleanup_thread = threading.Thread(target=cleanup_scheduler, daemon=True)
 cleanup_thread.start()
 
 print(f"✅ Rate limiting configured: {DAILY_LIMIT} requests/day, {RATE_LIMIT}")
+
+async def fetch_railway_usage() -> Optional[dict]:
+    """Fetch current Railway project usage via GraphQL API"""
+    if not RAILWAY_API_TOKEN or not RAILWAY_PROJECT_ID:
+        logger.warning("Railway API token or project ID not configured")
+        return None
+    
+    # Query for current month usage
+    now = datetime.utcnow()
+    start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    
+    query = """
+    query GetUsage($projectId: String!, $startDate: DateTime!, $endDate: DateTime!) {
+        usage(
+            projectId: $projectId
+            startDate: $startDate
+            endDate: $endDate
+            measurements: [CPU_USAGE, MEMORY_USAGE_GB, NETWORK_TX_GB]
+        ) {
+            measurement
+            value
+        }
+    }
+    """
+    
+    variables = {
+        "projectId": RAILWAY_PROJECT_ID,
+        "startDate": start_of_month.isoformat() + "Z",
+        "endDate": now.isoformat() + "Z"
+    }
+    
+    headers = {
+        "Authorization": f"Bearer {RAILWAY_API_TOKEN}",
+        "Content-Type": "application/json"
+    }
+    
+    try:
+        response = requests.post(
+            RAILWAY_API_URL,
+            json={"query": query, "variables": variables},
+            headers=headers,
+            timeout=10
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            if "data" in data and "usage" in data["data"]:
+                return data["data"]["usage"]
+            else:
+                logger.error(f"Unexpected Railway API response: {data}")
+                return None
+        else:
+            logger.error(f"Railway API request failed: {response.status_code} - {response.text}")
+            return None
+            
+    except Exception as e:
+        logger.error(f"Error fetching Railway usage: {e}")
+        return None
+
+def calculate_costs(usage_data: list) -> dict:
+    """Calculate costs from Railway usage data"""
+    costs = {
+        "cpu_cost": 0.0,
+        "memory_cost": 0.0,
+        "network_cost": 0.0,
+        "total_cost": 0.0
+    }
+    
+    for item in usage_data:
+        measurement = item.get("measurement")
+        value = float(item.get("value", 0))
+        
+        if measurement == "CPU_USAGE":
+            # Convert vCPU-minutes to monthly cost estimate
+            costs["cpu_cost"] = (value / (30 * 24 * 60)) * RAILWAY_PRICING["CPU_USAGE"]
+        elif measurement == "MEMORY_USAGE_GB":
+            # Convert GB-minutes to monthly cost estimate  
+            costs["memory_cost"] = (value / (30 * 24 * 60)) * RAILWAY_PRICING["MEMORY_USAGE_GB"]
+        elif measurement == "NETWORK_TX_GB":
+            costs["network_cost"] = value * RAILWAY_PRICING["NETWORK_TX_GB"]
+    
+    costs["total_cost"] = costs["cpu_cost"] + costs["memory_cost"] + costs["network_cost"]
+    return costs
 
 def try_import_ormbg():
     """Try to import ormbg, return None if failed"""
@@ -401,7 +503,12 @@ async def root():
 @app.get("/health")
 async def health():
     print("Health endpoint called")
-    return {"status": "healthy"}
+    return {
+        "status": "healthy",
+        "timestamp": datetime.utcnow().isoformat(),
+        "rate_limiting": True,
+        "cost_monitoring": bool(RAILWAY_API_TOKEN and RAILWAY_PROJECT_ID)
+    }
 
 @app.get("/admin/stats")
 async def get_rate_limit_stats(request: Request):
@@ -445,7 +552,7 @@ async def unblock_ip(ip: str, request: Request):
 
 @app.get("/rate-limit-info")
 async def get_rate_limit_info(request: Request):
-    """Public endpoint to get current rate limit status for the requesting IP"""
+    """Public endpoint to get current rate limit status for the requesting IP, now also includes server costs."""
     client_ip = get_client_ip(request)
     today = datetime.now().strftime("%Y-%m-%d")
     key = f"{client_ip}:{today}"
@@ -453,15 +560,28 @@ async def get_rate_limit_info(request: Request):
     with storage_lock:
         current_requests = daily_requests.get(key, 0)
         is_blocked = client_ip in blocked_ips
-        
-        return {
-            "ip": client_ip,
-            "requests_today": current_requests,
-            "daily_limit": DAILY_LIMIT,
-            "remaining_requests": max(0, DAILY_LIMIT - current_requests),
-            "is_blocked": is_blocked,
-            "rate_limit": RATE_LIMIT
+
+    # Fetch costs (Railway API integration)
+    usage_data = await fetch_railway_usage()
+    if usage_data:
+        costs = calculate_costs(usage_data)
+    else:
+        costs = {
+            "cpu_cost": 0.0,
+            "memory_cost": 0.0,
+            "network_cost": 0.0,
+            "total_cost": 0.0
         }
+        
+    return {
+        "ip": client_ip,
+        "requests_today": current_requests,
+        "daily_limit": DAILY_LIMIT,
+        "remaining_requests": max(0, DAILY_LIMIT - current_requests),
+        "is_blocked": is_blocked,
+        "rate_limit": RATE_LIMIT,
+        "costs": costs
+    }
 
 @app.get("/debug/model")
 async def debug_model():

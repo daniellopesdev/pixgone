@@ -459,29 +459,15 @@ function App() {
             </div>
           </div>
 
+          {/* Top Ad Space - Strategic placement after hero */}
+          <div className="ad-section top-ad">
+            <AdBanner adSlot="YOUR_TOP_AD_SLOT" />
+          </div>
+
           {/* Main Content Grid */}
           <div className="main-grid">
             {/* Left Column - Upload/Processing */}
             <div className="upload-column">
-              {/* Rate Limit Status */}
-              {rateLimitInfo && (
-                <div className="status-card">
-                  <div className="status-info">
-                    <div className="status-item">
-                      <span className="status-label">Requests Today</span>
-                      <span className="status-value">{rateLimitInfo.requests_today}/{rateLimitInfo.daily_limit}</span>
-                    </div>
-                    <div className="status-item">
-                      <span className="status-label">Remaining</span>
-                      <span className="status-value">{rateLimitInfo.remaining_requests}</span>
-                    </div>
-                    {rateLimitInfo.is_blocked && (
-                      <div className="status-warning">IP blocked for abuse</div>
-                    )}
-                  </div>
-                </div>
-              )}
-
               {/* Upload or Processing Area */}
               <div className="main-workspace">
                 {!isProcessing && !processedImage ? (
@@ -514,6 +500,19 @@ function App() {
                         <span>• Best results with clear subjects</span>
                       </div>
                     </div>
+
+                    {/* Request Info Toggler */}
+                    {rateLimitInfo && (
+                      <div className="request-toggler">
+                        <div className="request-summary">
+                          <span className="request-count">{rateLimitInfo.requests_today}/{rateLimitInfo.daily_limit}</span>
+                          <span className="request-label">requests today</span>
+                          {rateLimitInfo.is_blocked && (
+                            <span className="request-blocked">⚠️ Blocked</span>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ) : isProcessing ? (
                   /* Processing Area */
@@ -630,11 +629,16 @@ function App() {
               </div>
             </div>
 
-            {/* Right Column - Information */}
+            {/* Right Column - Server Costs & Info */}
             <div className="info-column">
-              {/* Cost Monitor */}
-              <div className="info-card">
+              {/* Server Costs - Aligned Right */}
+              <div className="server-costs-card">
                 <CostMonitor />
+              </div>
+
+              {/* Sidebar Ad Space */}
+              <div className="ad-section sidebar-ad">
+                <AdBanner adSlot="YOUR_SIDEBAR_AD_SLOT" />
               </div>
 
               {/* Transparency Note */}
@@ -646,23 +650,40 @@ function App() {
                 </p>
                 <small className="info-note">Costs updated every 5 minutes via Railway's API</small>
               </div>
+            </div>
+          </div>
 
-              {/* Features */}
-              <div className="info-card">
-                <h3 className="info-title">Features</h3>
-                <ul className="feature-list">
-                  <li>✓ High-quality AI background removal</li>
-                  <li>✓ Multiple AI models available</li>
-                  <li>✓ Fast processing (under 30 seconds)</li>
-                  <li>✓ Privacy-focused (no data storage)</li>
-                  <li>✓ Free to use with transparent costs</li>
-                </ul>
+          {/* Features Section - Highlight Cards */}
+          <div className="features-section">
+            <h2 className="features-title">Why Choose pixGone?</h2>
+            <div className="features-grid">
+              <div className="feature-card">
+                <div className="feature-icon">🎯</div>
+                <h3 className="feature-name">High-Quality AI</h3>
+                <p className="feature-description">Advanced background removal with multiple AI models</p>
+              </div>
+              <div className="feature-card">
+                <div className="feature-icon">⚡</div>
+                <h3 className="feature-name">Lightning Fast</h3>
+                <p className="feature-description">Process images in under 30 seconds</p>
+              </div>
+              <div className="feature-card">
+                <div className="feature-icon">🔒</div>
+                <h3 className="feature-name">Privacy Focused</h3>
+                <p className="feature-description">No data storage, your images stay private</p>
+              </div>
+              <div className="feature-card">
+                <div className="feature-icon">💰</div>
+                <h3 className="feature-name">Transparent Costs</h3>
+                <p className="feature-description">Free to use with full cost transparency</p>
               </div>
             </div>
           </div>
 
           {/* Ad Spaces */}
-          <AdBanner adSlot="YOUR_BOTTOM_AD_SLOT" />
+          <div className="ad-section bottom-ad">
+            <AdBanner adSlot="YOUR_BOTTOM_AD_SLOT" />
+          </div>
         </div>
       </main>
 
