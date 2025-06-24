@@ -41,6 +41,8 @@ function App() {
   const [rateLimitInfo, setRateLimitInfo] = useState(null);
   const [rateLimitError, setRateLimitError] = useState(null);
   const [currentMessage, setCurrentMessage] = useState('');
+  const [showTransparencyInfo, setShowTransparencyInfo] = useState(false);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
   const fileInputRef = useRef(null);
   const progressInterval = useRef(null);
   const stuckTimeout = useRef(null);
@@ -356,6 +358,17 @@ function App() {
     }
   };
 
+  // Scroll to upload section
+  const scrollToUpload = () => {
+    const uploadSection = document.querySelector('.upload-workspace, .processing-workspace, .results-workspace');
+    if (uploadSection) {
+      uploadSection.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+      });
+    }
+  };
+
   // Bypass function for false positives
   const bypassAdblockDetection = () => {
     setAdblockDetected(false);
@@ -363,6 +376,61 @@ function App() {
     localStorage.setItem('pixgone-adblock-bypass', Date.now().toString());
     console.log('AdBlock detection bypassed by user');
   };
+
+  // Image Preview Modal Component
+  const ImagePreviewModal = () => (
+    showPreviewModal && processedImage ? (
+      <div className="preview-modal-overlay" onClick={() => setShowPreviewModal(false)}>
+        <div className="preview-modal" onClick={(e) => e.stopPropagation()}>
+          <div className="preview-modal-header">
+            <h3>Image Preview</h3>
+            <button 
+              className="preview-close-btn"
+              onClick={() => setShowPreviewModal(false)}
+            >
+              ×
+            </button>
+          </div>
+          
+          <div className="preview-content">
+            <div className="preview-image-container">
+              <div
+                className="preview-background"
+                style={{ backgroundColor: backgroundColor }}
+              >
+                <img
+                  src={processedImage}
+                  alt="Enlarged Preview"
+                  className="preview-image"
+                />
+              </div>
+            </div>
+            
+            <div className="preview-controls">
+              <div className="preview-color-section">
+                <h4>Test Background Colors</h4>
+                <ColorPicker
+                  onColorChange={setBackgroundColor}
+                  currentColor={backgroundColor}
+                />
+              </div>
+              
+              <div className="preview-actions">
+                <button className="btn-primary" onClick={downloadImage}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-15"/>
+                    <polyline points="7,10 12,15 17,10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                  Download
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    ) : null
+  );
 
   return (
     <div className="App">
@@ -375,7 +443,25 @@ function App() {
           <div className="hero-section">
             <div className="hero-content">
               <h1 className="hero-title">Professional Background Removal</h1>
-              <p className="hero-subtitle">AI-powered background removal. Free, fast, and reliable.</p>
+              <p className="hero-subtitle">Slightly better than some overpriced apps.<br />From the community to the community.</p>
+              
+              {/* Animated Scroll Button */}
+              <button className="hero-cta-btn" onClick={scrollToUpload}>
+                <span className="cta-text">Start Removing Backgrounds</span>
+                <div className="cta-arrow">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M7 13l3 3 7-7"/>
+                    <path d="M21 12H3"/>
+                  </svg>
+                </div>
+              </button>
+            </div>
+            
+            {/* Animated Background Elements */}
+            <div className="hero-bg-elements">
+              <div className="floating-element element-1"></div>
+              <div className="floating-element element-2"></div>
+              <div className="floating-element element-3"></div>
             </div>
           </div>
 
@@ -500,6 +586,20 @@ function App() {
                               alt="Processed"
                               className="comparison-image"
                             />
+                            
+                            {/* Enlarge Button Overlay */}
+                            <button 
+                              className="enlarge-btn"
+                              onClick={() => setShowPreviewModal(true)}
+                              title="Enlarge and test colors"
+                            >
+                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M8 3H5a2 2 0 0 0-2 2v3"/>
+                                <path d="M21 8V5a2 2 0 0 0-2-2h-3"/>
+                                <path d="M3 16v3a2 2 0 0 0 2 2h3"/>
+                                <path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
+                              </svg>
+                            </button>
                           </div>
                           <ColorPicker
                             onColorChange={setBackgroundColor}
@@ -552,21 +652,33 @@ function App() {
               {/* Server Costs - Aligned Right */}
               <div className="server-costs-card">
                 <CostMonitor />
+                
+                {/* Transparency Info Toggler */}
+                <div className="transparency-toggler">
+                  <button 
+                    className="transparency-toggle-btn"
+                    onClick={() => setShowTransparencyInfo(!showTransparencyInfo)}
+                  >
+                    <span>Transparency Info</span>
+                    <span className={`toggle-icon ${showTransparencyInfo ? 'open' : ''}`}>▼</span>
+                  </button>
+                  
+                  {showTransparencyInfo && (
+                    <div className="transparency-info">
+                      <h4>Transparent Pricing</h4>
+                      <p>
+                        We believe in full transparency. These are our real server costs for running this AI service. 
+                        Your usage helps cover these expenses and keeps the service free for everyone.
+                      </p>
+                      <small>Costs updated every 5 minutes via Railway's API</small>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Sidebar Ad Space */}
               <div className="ad-section sidebar-ad">
                 <AdBanner adSlot="YOUR_SIDEBAR_AD_SLOT" />
-              </div>
-
-              {/* Transparency Note */}
-              <div className="info-card">
-                <h3 className="info-title">Transparent Pricing</h3>
-                <p className="info-text">
-                  We believe in full transparency. These are our real server costs for running this AI service.
-                  Your usage helps cover these expenses and keeps the service free for everyone.
-                </p>
-                <small className="info-note">Costs updated every 5 minutes via Railway's API</small>
               </div>
             </div>
           </div>
@@ -579,11 +691,6 @@ function App() {
                 <div className="feature-icon">🎯</div>
                 <h3 className="feature-name">High-Quality AI</h3>
                 <p className="feature-description">Advanced background removal with multiple AI models</p>
-              </div>
-              <div className="feature-card">
-                <div className="feature-icon">⚡</div>
-                <h3 className="feature-name">Lightning Fast</h3>
-                <p className="feature-description">Process images in under 30 seconds</p>
               </div>
               <div className="feature-card">
                 <div className="feature-icon">🔒</div>
@@ -606,6 +713,8 @@ function App() {
       </main>
 
       <Footer />
+
+      <ImagePreviewModal />
     </div>
   );
 }

@@ -63,9 +63,19 @@ app.add_middleware(
 print("✅ CORS middleware configured")
 
 # Rate limiting configuration
-DAILY_LIMIT = int(os.environ.get("DAILY_LIMIT", "50"))  # Requests per day per IP
+try:
+    DAILY_LIMIT = int(os.environ.get("DAILY_LIMIT", "50"))  # Requests per day per IP
+except ValueError:
+    print(f"⚠️ Invalid DAILY_LIMIT value: '{os.environ.get('DAILY_LIMIT')}', using default: 50")
+    DAILY_LIMIT = 50
+
 RATE_LIMIT = "10/minute"  # Requests per minute per IP
-ABUSE_THRESHOLD = int(os.environ.get("ABUSE_THRESHOLD", "100"))  # Max requests per day before blocking
+
+try:
+    ABUSE_THRESHOLD = int(os.environ.get("ABUSE_THRESHOLD", "100"))  # Max requests per day before blocking
+except ValueError:
+    print(f"⚠️ Invalid ABUSE_THRESHOLD value: '{os.environ.get('ABUSE_THRESHOLD')}', using default: 100")
+    ABUSE_THRESHOLD = 100
 
 # In-memory storage for daily request tracking (use Redis in production)
 daily_requests = defaultdict(int)
@@ -132,6 +142,18 @@ cleanup_thread = threading.Thread(target=cleanup_scheduler, daemon=True)
 cleanup_thread.start()
 
 print(f"✅ Rate limiting configured: {DAILY_LIMIT} requests/day, {RATE_LIMIT}")
+
+# Log environment variable status
+print("\n📊 Environment Configuration Status:")
+print(f"  - DAILY_LIMIT: {DAILY_LIMIT}")
+print(f"  - ABUSE_THRESHOLD: {ABUSE_THRESHOLD}")
+print(f"  - RAILWAY_API_TOKEN: {'✅ Set' if RAILWAY_API_TOKEN else '❌ Not set'}")
+print(f"  - RAILWAY_PROJECT_ID: {'✅ Set' if RAILWAY_PROJECT_ID else '❌ Not set'}")
+if RAILWAY_API_TOKEN == "*****":
+    print("  ⚠️ RAILWAY_API_TOKEN appears to be a placeholder ('*****')")
+if RAILWAY_PROJECT_ID == "*****":
+    print("  ⚠️ RAILWAY_PROJECT_ID appears to be a placeholder ('*****')")
+print("")
 
 async def fetch_railway_usage() -> Optional[dict]:
     """Fetch current Railway project usage via GraphQL API"""

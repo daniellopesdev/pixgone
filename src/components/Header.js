@@ -1,5 +1,4 @@
 import React from 'react';
-import CostMonitor from './CostMonitor';
 import './Header.css';
 
 const Header = () => {
@@ -19,11 +18,6 @@ const Header = () => {
         {/* Logo Section */}
         <div className="logo-section">
           <img src={process.env.PUBLIC_URL + '/logoPix.png'} alt="pixGone logo" className="logo-img" />
-        </div>
-
-        {/* Cost Monitor - Compact Version */}
-        <div className="header-cost-monitor">
-          <CostMonitor compact />
         </div>
 
         {/* Navigation Section */}
