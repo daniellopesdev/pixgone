@@ -1,11 +1,28 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import DonateButton from './DonateButton';
 import './Header.css';
 
 const Header = () => {
-  const handleDonate = () => {
-    // 💰 Ko-fi donation link
-    window.open('https://ko-fi.com/daniellopesdev', '_blank', 'noopener,noreferrer');
-  };
+  const [appStatus, setAppStatus] = useState(null);
+
+  useEffect(() => {
+    const fetchAppStatus = async () => {
+      try {
+        const response = await fetch(`${process.env.REACT_APP_API_URL || 'https://pixgone-production.up.railway.app'}/api/app-status`);
+        if (response.ok) {
+          const status = await response.json();
+          setAppStatus(status);
+        }
+      } catch (err) {
+        console.error('Error fetching app status:', err);
+      }
+    };
+
+    fetchAppStatus();
+    // Refresh every 5 minutes
+    const interval = setInterval(fetchAppStatus, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleGitHub = () => {
     // ⭐ GitHub repository link
@@ -31,13 +48,12 @@ const Header = () => {
               <span className="btn-text">GitHub</span>
             </button>
             
-            <button 
-              className="nav-btn donate-btn" 
-              onClick={handleDonate}
-              title="Support this project"
-            >
-              <span className="btn-text">Donate</span>
-            </button>
+            <DonateButton 
+              variant="header" 
+              size="small" 
+              appStatus={appStatus}
+              showWhenDisabled={true}
+            />
           </div>
         </nav>
       </div>

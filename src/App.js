@@ -5,6 +5,8 @@ import ColorPicker from './components/ColorPicker';
 import AdBanner from './components/AdBanner';
 import CostMonitor from './components/CostMonitor';
 import DonationStats from './components/DonationStats';
+import DonateButton from './components/DonateButton';
+import KofiWidgetEnhanced from './components/KofiWidgetEnhanced';
 import './App.css';
 
 const AdblockModal = ({ open, onBypass }) => (
@@ -660,14 +662,11 @@ function App() {
                       {rateLimitError && rateLimitError.code === 'SERVICE_DISABLED' && (
                         <div className="error-help">
                           <p>Service is temporarily disabled due to cost limits.</p>
-                          <a 
-                            href="https://ko-fi.com/daniellopesdev" 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="donate-link-error"
-                          >
-                            Donate to Keep It Running
-                          </a>
+                          <DonateButton 
+                            variant="urgent" 
+                            size="small" 
+                            showWhenDisabled={true}
+                          />
                         </div>
                       )}
                     </div>
@@ -747,6 +746,8 @@ function App() {
       <Footer />
 
       <ImagePreviewModal />
+      
+      <KofiWidgetEnhanced />
     </div>
   );
 }

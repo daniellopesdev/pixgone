@@ -88,19 +88,6 @@
   box-shadow: 0 2px 8px rgba(36, 41, 46, 0.2);
 }
 
-/* Donate Button */
-.donate-btn {
-  background: #ff6b6b;
-  color: white;
-  border-color: #ff5252;
-}
-
-.donate-btn:hover {
-  background: #ff5252;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
-}
-
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .header-container {

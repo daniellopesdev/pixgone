@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import DonateButton from './DonateButton';
 import './DonationStats.css';
 
 const DonationStats = () => {
@@ -65,9 +66,9 @@ const DonationStats = () => {
   }
 
   const { total_donations, donation_count, top_contributors } = donationStats;
-  const { enabled, current_cost, monthly_donations, available_budget } = appStatus;
+  const { enabled, current_cost, monthly_donations, available_budget, base_threshold, total_budget } = appStatus;
   
-  const usagePercentage = monthly_donations > 0 ? (current_cost / monthly_donations) * 100 : 0;
+  const usagePercentage = total_budget > 0 ? (current_cost / total_budget) * 100 : 0;
   const progressColor = usagePercentage > 80 ? '#ef4444' : usagePercentage > 60 ? '#f59e0b' : '#10b981';
 
   return (
@@ -81,8 +82,16 @@ const DonationStats = () => {
 
       <div className="budget-overview">
         <div className="budget-item">
+          <span className="budget-label">Base Threshold</span>
+          <span className="budget-value">${base_threshold}</span>
+        </div>
+        <div className="budget-item">
           <span className="budget-label">Monthly Donations</span>
           <span className="budget-value">${monthly_donations}</span>
+        </div>
+        <div className="budget-item">
+          <span className="budget-label">Total Budget</span>
+          <span className="budget-value">${total_budget}</span>
         </div>
         <div className="budget-item">
           <span className="budget-label">Current Costs</span>
@@ -108,21 +117,19 @@ const DonationStats = () => {
         </div>
         <div className="progress-labels">
           <span>${current_cost} used</span>
-          <span>${monthly_donations} total</span>
+          <span>${total_budget} total</span>
         </div>
       </div>
 
       {!enabled && (
         <div className="service-disabled">
           <p>Service is currently disabled due to cost limits.</p>
-          <a 
-            href="https://ko-fi.com/daniellopesdev" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="donate-button"
-          >
-            Donate to Keep It Running
-          </a>
+          <DonateButton 
+            variant="urgent" 
+            size="medium" 
+            appStatus={appStatus}
+            showWhenDisabled={true}
+          />
         </div>
       )}
 
@@ -142,14 +149,12 @@ const DonationStats = () => {
 
       <div className="donation-cta">
         <p>Help keep this service free for everyone!</p>
-        <a 
-          href="https://ko-fi.com/daniellopesdev" 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="donate-link"
-        >
-          ☕ Buy me a coffee
-        </a>
+        <DonateButton 
+          variant="sidebar" 
+          size="medium" 
+          appStatus={appStatus}
+          showWhenDisabled={true}
+        />
       </div>
     </div>
   );

@@ -43,8 +43,8 @@
 
 .budget-overview {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 0.75rem;
   margin-bottom: 1.5rem;
 }
 
@@ -53,21 +53,21 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 1rem;
+  padding: 0.75rem;
   background: #f8fafc;
   border-radius: 12px;
   border: 1px solid #e2e8f0;
 }
 
 .budget-label {
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   color: #64748b;
   font-weight: 500;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 
 .budget-value {
-  font-size: 1.25rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #1a1a1a;
   font-family: 'JetBrains Mono', 'SF Mono', monospace;
@@ -119,21 +119,6 @@
   font-weight: 500;
 }
 
-.donate-button {
-  display: inline-block;
-  background: #dc2626;
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  text-decoration: none;
-  font-weight: 600;
-  transition: background-color 0.2s ease;
-}
-
-.donate-button:hover {
-  background: #b91c1c;
-}
-
 .top-contributors {
   margin-bottom: 1.5rem;
 }
@@ -183,23 +168,6 @@
 .donation-cta p {
   margin: 0 0 1rem 0;
   font-weight: 500;
-}
-
-.donate-link {
-  display: inline-block;
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  text-decoration: none;
-  font-weight: 600;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  transition: all 0.2s ease;
-}
-
-.donate-link:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: translateY(-1px);
 }
 
 .stats-loading,

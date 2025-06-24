@@ -267,7 +267,9 @@ def is_app_enabled() -> dict:
                 current_cost = costs.get("total_cost", 0.0)
         
         monthly_donations = get_current_month_donations()
-        available_budget = monthly_donations - current_cost
+        
+        # Available budget = Base threshold ($5) + Monthly donations - Current costs
+        available_budget = BASE_THRESHOLD + monthly_donations - current_cost
         is_enabled = available_budget > 0
         
         return {
@@ -276,6 +278,7 @@ def is_app_enabled() -> dict:
             "monthly_donations": round(monthly_donations, 2),
             "available_budget": round(available_budget, 2),
             "base_threshold": BASE_THRESHOLD,
+            "total_budget": round(BASE_THRESHOLD + monthly_donations, 2),
             "reason": None if is_enabled else "Monthly budget exceeded"
         }
         
@@ -285,8 +288,9 @@ def is_app_enabled() -> dict:
             "enabled": True,  # Default to enabled if error
             "current_cost": 0.0,
             "monthly_donations": 0.0,
-            "available_budget": 0.0,
+            "available_budget": BASE_THRESHOLD,
             "base_threshold": BASE_THRESHOLD,
+            "total_budget": BASE_THRESHOLD,
             "reason": "Error checking status"
         }
 
