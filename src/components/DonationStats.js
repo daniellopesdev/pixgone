@@ -8,6 +8,11 @@ const DonationStats = ({ currentCost, onDonateClick }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Format currency to 2 decimal places
+  const formatCurrency = (amount) => {
+    return typeof amount === 'number' ? amount.toFixed(2) : '0.00';
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -89,24 +94,24 @@ const DonationStats = ({ currentCost, onDonateClick }) => {
       <div className="budget-overview">
         <div className="budget-item">
           <span className="budget-label">Base Threshold</span>
-          <span className="budget-value">${base_threshold}</span>
+          <span className="budget-value">${formatCurrency(base_threshold)}</span>
         </div>
         <div className="budget-item">
           <span className="budget-label">Monthly Donations</span>
-          <span className="budget-value">${monthly_donations}</span>
+          <span className="budget-value">${formatCurrency(monthly_donations)}</span>
         </div>
         <div className="budget-item">
           <span className="budget-label">Total Budget</span>
-          <span className="budget-value">${total_budget}</span>
+          <span className="budget-value">${formatCurrency(total_budget)}</span>
         </div>
         <div className="budget-item">
           <span className="budget-label">Current Costs</span>
-          <span className="budget-value">${current_cost}</span>
+          <span className="budget-value">${formatCurrency(current_cost)}</span>
         </div>
         <div className="budget-item">
           <span className="budget-label">Available Budget</span>
           <span className={`budget-value ${available_budget < 0 ? 'negative' : ''}`}>
-            ${available_budget}
+            ${formatCurrency(available_budget)}
           </span>
         </div>
       </div>
@@ -122,8 +127,8 @@ const DonationStats = ({ currentCost, onDonateClick }) => {
           />
         </div>
         <div className="progress-labels">
-          <span>${current_cost} used</span>
-          <span>${total_budget} total</span>
+          <span>${formatCurrency(current_cost)} used</span>
+          <span>${formatCurrency(total_budget)} total</span>
         </div>
       </div>
 
@@ -147,7 +152,7 @@ const DonationStats = ({ currentCost, onDonateClick }) => {
             {top_contributors.slice(0, 5).map((contributor, index) => (
               <div key={index} className="contributor">
                 <span className="contributor-name">{contributor.name}</span>
-                <span className="contributor-amount">${contributor.amount}</span>
+                <span className="contributor-amount">${formatCurrency(contributor.amount)}</span>
               </div>
             ))}
           </div>

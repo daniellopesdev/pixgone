@@ -12,7 +12,7 @@ const KofiWidgetEnhanced = () => {
       if (window.kofiWidgetOverlay) {
         window.kofiWidgetOverlay.draw('daniellopesdev', {
           'type': 'floating-chat',
-          'floating-chat.donateButton.text': '☕ Support',
+          'floating-chat.donateButton.text': 'Support',
           'floating-chat.donateButton.background-color': '#667eea',
           'floating-chat.donateButton.text-color': '#ffffff',
           'floating-chat.donateButton.background-color-hover': '#5a67d8',
