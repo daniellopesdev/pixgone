@@ -1,3 +1,7 @@
+#!/usr/bin/env python3
+# pixGone Server - AI Background Removal API
+# Updated with unified rate limiting and cost monitoring - v2.1.0
+
 from fastapi import FastAPI, UploadFile, File, Response, Form, HTTPException, BackgroundTasks, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
