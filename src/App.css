@@ -138,20 +138,21 @@
   width: 100%;
   height: 100%;
   display: grid;
-  grid-template-columns: repeat(20, 1fr);
-  grid-template-rows: repeat(20, 1fr);
-  gap: 1px;
-  opacity: 0.4;
+  grid-template-columns: repeat(12, 1fr);
+  grid-template-rows: repeat(12, 1fr);
+  gap: 2px;
+  opacity: 0.3;
   z-index: 1;
   pointer-events: none;
 }
 
 .pixel {
   background: rgba(255, 255, 255, calc(0.8 * var(--intensity, 1)));
-  border-radius: 1px;
+  border-radius: 2px;
   animation: pixelDisappear var(--duration, 3s) ease-in-out var(--delay, 0s) infinite;
-  box-shadow: 0 0 calc(2px * var(--intensity, 1)) rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 calc(3px * var(--intensity, 1)) rgba(255, 255, 255, 0.4);
   transition: all 0.3s ease;
+  aspect-ratio: 1;
 }
 
 .pixel:nth-child(odd) {
@@ -169,13 +170,13 @@
     background: rgba(255, 255, 255, 0.8);
   }
   50% {
-    opacity: 0.5;
-    transform: scale(0.8);
+    opacity: 0.3;
+    transform: scale(0.9);
     background: rgba(255, 255, 255, 0.4);
   }
   70%, 100% {
     opacity: 0;
-    transform: scale(0);
+    transform: scale(0.8);
     background: transparent;
   }
 }
@@ -183,18 +184,19 @@
 @keyframes pixelDisappearOdd {
   0%, 25% {
     opacity: 1;
-    transform: scale(1) rotate(0deg);
+    transform: scale(1);
     background: rgba(255, 255, 255, 0.9);
     box-shadow: 0 0 4px rgba(255, 255, 255, 0.7);
   }
   45% {
-    opacity: 0.6;
-    transform: scale(0.9) rotate(180deg);
+    opacity: 0.4;
+    transform: scale(0.85);
     background: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 2px rgba(255, 255, 255, 0.4);
   }
   65%, 100% {
     opacity: 0;
-    transform: scale(0) rotate(360deg);
+    transform: scale(0.7);
     background: transparent;
     box-shadow: none;
   }
@@ -205,19 +207,19 @@
     opacity: 1;
     transform: scale(1);
     background: rgba(255, 255, 255, 0.7);
-    filter: brightness(1.2);
+    box-shadow: 0 0 3px rgba(255, 255, 255, 0.6);
   }
   55% {
-    opacity: 0.4;
-    transform: scale(0.7);
+    opacity: 0.5;
+    transform: scale(0.9);
     background: rgba(255, 255, 255, 0.3);
-    filter: brightness(0.8);
+    box-shadow: 0 0 1px rgba(255, 255, 255, 0.3);
   }
   75%, 100% {
     opacity: 0;
-    transform: scale(0);
+    transform: scale(0.75);
     background: transparent;
-    filter: brightness(0);
+    box-shadow: none;
   }
 }
 
@@ -990,15 +992,18 @@
   }
 
   .pixel-grid-animation {
-    width: 60px;
-    height: 60px;
+    width: 80px;
+    height: 80px;
     top: 15%;
     right: 5%;
     opacity: 0.4;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+    gap: 1px;
   }
 
   .pixel {
-    border-radius: 0.5px;
+    border-radius: 1px;
   }
   
   .upload-workspace,

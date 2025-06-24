@@ -879,6 +879,18 @@ async def debug_railway_costs():
     
     return debug_info
 
+@app.get("/debug/env-check")
+async def debug_env_check():
+    """Debug endpoint to check environment variables"""
+    return {
+        "kofi_webhook_secret_set": bool(KOFI_WEBHOOK_SECRET),
+        "kofi_verification_token_set": bool(KOFI_VERIFICATION_TOKEN),
+        "base_threshold": BASE_THRESHOLD,
+        "donation_db_path": DONATION_DB_PATH,
+        "railway_api_token_set": bool(RAILWAY_API_TOKEN),
+        "railway_project_id_set": bool(RAILWAY_PROJECT_ID)
+    }
+
 # Donation and App Status Endpoints
 @app.post("/webhook/kofi")
 async def kofi_webhook(request: Request):

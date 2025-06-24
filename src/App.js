@@ -460,20 +460,20 @@ function App() {
             
             {/* Pixel Grid Animation - Full Hero Coverage */}
             <div className="pixel-grid-animation">
-              {Array.from({ length: 400 }, (_, i) => {
-                const row = Math.floor(i / 20);
-                const col = i % 20;
-                const distanceFromCenter = Math.sqrt(Math.pow(row - 9.5, 2) + Math.pow(col - 9.5, 2));
-                const waveDelay = distanceFromCenter * 0.2;
+              {Array.from({ length: 144 }, (_, i) => {
+                const row = Math.floor(i / 12);
+                const col = i % 12;
+                const distanceFromCenter = Math.sqrt(Math.pow(row - 5.5, 2) + Math.pow(col - 5.5, 2));
+                const waveDelay = distanceFromCenter * 0.15;
                 
                 return (
                   <div 
                     key={i} 
                     className="pixel" 
                     style={{
-                      '--delay': `${waveDelay + Math.random() * 3}s`,
-                      '--duration': `${4 + Math.random() * 3}s`,
-                      '--intensity': Math.random() > 0.6 ? '1' : '0.7'
+                      '--delay': `${waveDelay + Math.random() * 2}s`,
+                      '--duration': `${3 + Math.random() * 2}s`,
+                      '--intensity': Math.random() > 0.5 ? '1' : '0.6'
                     }}
                   ></div>
                 );
@@ -680,6 +680,33 @@ function App() {
             <div className="info-column">
               {/* Community Support & Donation Stats */}
               <DonationStats />
+              
+              {/* Server Costs - Aligned Right */}
+              <div className="server-costs-card">
+                <CostMonitor />
+                
+                {/* Transparency Info Toggler */}
+                <div className="transparency-toggler">
+                  <button 
+                    className="transparency-toggle-btn"
+                    onClick={() => setShowTransparencyInfo(!showTransparencyInfo)}
+                  >
+                    <span>Transparency Info</span>
+                    <span className={`toggle-icon ${showTransparencyInfo ? 'open' : ''}`}>▼</span>
+                  </button>
+                  
+                  {showTransparencyInfo && (
+                    <div className="transparency-info">
+                      <h4>Transparent Pricing</h4>
+                      <p>
+                        We believe in full transparency. These are our real server costs for running this AI service. 
+                        Your usage helps cover these expenses and keeps the service free for everyone.
+                      </p>
+                      <small>Costs updated every 5 minutes via Railway's API</small>
+                    </div>
+                  )}
+                </div>
+              </div>
 
               {/* Sidebar Ad Space */}
               <div className="ad-section sidebar-ad">
