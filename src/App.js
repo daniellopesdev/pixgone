@@ -7,6 +7,7 @@ import CostMonitor from './components/CostMonitor';
 import DonationStats from './components/DonationStats';
 import DonateButton from './components/DonateButton';
 import KofiWidgetEnhanced from './components/KofiWidgetEnhanced';
+import SmoothEdgesImage from './components/SmoothEdgesImage';
 import './App.css';
 
 const AdblockModal = ({ open, onBypass }) => (
@@ -74,6 +75,7 @@ function App() {
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [currentServerCost, setCurrentServerCost] = useState(0);
   const [donateModalOpen, setDonateModalOpen] = useState(false);
+  const [smoothEdges, setSmoothEdges] = useState(false);
   const fileInputRef = useRef(null);
   const progressInterval = useRef(null);
   const stuckTimeout = useRef(null);
@@ -617,16 +619,16 @@ function App() {
                       <div className="image-card">
                         <h4 className="image-label">Background Removed</h4>
                         <div className="image-wrapper processed">
-                          <div
-                            className="processed-background"
-                            style={{ backgroundColor: backgroundColor }}
-                          >
-                            <img
-                              src={processedImage}
-                              alt="Processed"
-                              className="comparison-image"
-                            />
-                            
+                          <div className="processed-background" style={{ backgroundColor: backgroundColor }}>
+                            {smoothEdges ? (
+                              <SmoothEdgesImage src={processedImage} blurRadius={2} edgeWidth={2} />
+                            ) : (
+                              <img
+                                src={processedImage}
+                                alt="Processed"
+                                className="comparison-image"
+                              />
+                            )}
                             {/* Enlarge Button Overlay */}
                             <button 
                               className="enlarge-btn"
@@ -647,6 +649,12 @@ function App() {
                           />
                         </div>
                       </div>
+                    </div>
+
+                    <div style={{ textAlign: 'center', margin: '1rem 0' }}>
+                      <button className="btn-secondary" onClick={() => setSmoothEdges(v => !v)}>
+                        {smoothEdges ? 'Disable Smooth Edges' : 'Enable Smooth Edges'}
+                      </button>
                     </div>
 
                     <div className="action-buttons-modern">
