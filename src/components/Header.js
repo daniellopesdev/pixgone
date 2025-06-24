@@ -19,7 +19,6 @@ const Header = () => {
         {/* Logo Section */}
         <div className="logo-section">
           <img src={process.env.PUBLIC_URL + '/logoPix.png'} alt="pixGone logo" className="logo-img" />
-          <span className="logo-text">pixGone</span>
         </div>
 
         {/* Cost Monitor - Compact Version */}
