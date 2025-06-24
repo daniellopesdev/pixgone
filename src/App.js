@@ -451,146 +451,217 @@ function App() {
 
       <main className="main-content">
         <div className="container">
+          {/* Hero Section */}
           <div className="hero-section">
-            <h1>Slightly better than some overpriced apps.</h1>
-            <p>AI-powered background removal. Free, fast, and easy to use.</p>
-          </div>
-
-          {/* Top Ad Space */}
-          <AdBanner adSlot="YOUR_TOP_AD_SLOT" />
-
-          {/* Rate Limit Status */}
-          {rateLimitInfo && (
-            <div className="rate-limit-status">
-              <div className="rate-limit-info">
-                <span>Requests today: {rateLimitInfo.requests_today}/{rateLimitInfo.daily_limit}</span>
-                <span>Remaining: {rateLimitInfo.remaining_requests}</span>
-                {rateLimitInfo.is_blocked && (
-                  <span className="blocked-warning">Your IP is blocked for abuse</span>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Cost Transparency Section */}
-          <div className="transparency-section">
-            <CostMonitor />
-            <div className="transparency-note">
-              <h3>Transparent Pricing</h3>
-              <p>
-                We believe in full transparency. These are our real server costs for running this AI service.
-                Your usage helps cover these expenses and keeps the service free for everyone.
-              </p>
-              <small>Costs are updated every 5 minutes via Railway's API</small>
+            <div className="hero-content">
+              <h1 className="hero-title">Professional Background Removal</h1>
+              <p className="hero-subtitle">AI-powered background removal. Free, fast, and reliable.</p>
             </div>
           </div>
 
-          <div className="upload-section">
-            <div className={`upload-area${adblockOpen ? ' blocked' : ''}`} onDrop={adblockOpen ? undefined : handleDrop} onDragOver={adblockOpen ? undefined : handleDragOver} style={adblockOpen ? { pointerEvents: 'none', opacity: 0.5, filter: 'grayscale(0.7)' } : {}}>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={adblockOpen ? undefined : handleFileSelect}
-                className="file-input"
-                disabled={adblockOpen}
-              />
-              <div className="upload-content">
-                <div className="upload-icon">+</div>
-                <p>Drag & drop an image here or click to browse</p>
-                <p className="file-info">Max file size: 10MB</p>
+          {/* Main Content Grid */}
+          <div className="main-grid">
+            {/* Left Column - Upload/Processing */}
+            <div className="upload-column">
+              {/* Rate Limit Status */}
+              {rateLimitInfo && (
+                <div className="status-card">
+                  <div className="status-info">
+                    <div className="status-item">
+                      <span className="status-label">Requests Today</span>
+                      <span className="status-value">{rateLimitInfo.requests_today}/{rateLimitInfo.daily_limit}</span>
+                    </div>
+                    <div className="status-item">
+                      <span className="status-label">Remaining</span>
+                      <span className="status-value">{rateLimitInfo.remaining_requests}</span>
+                    </div>
+                    {rateLimitInfo.is_blocked && (
+                      <div className="status-warning">IP blocked for abuse</div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Upload or Processing Area */}
+              <div className="main-workspace">
+                {!isProcessing && !processedImage ? (
+                  /* Upload Area */
+                  <div className={`upload-workspace${adblockOpen ? ' blocked' : ''}`} 
+                       onDrop={adblockOpen ? undefined : handleDrop} 
+                       onDragOver={adblockOpen ? undefined : handleDragOver} 
+                       style={adblockOpen ? { pointerEvents: 'none', opacity: 0.5, filter: 'grayscale(0.7)' } : {}}>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={adblockOpen ? undefined : handleFileSelect}
+                      className="file-input"
+                      disabled={adblockOpen}
+                    />
+                    <div className="upload-content">
+                      <div className="upload-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                          <polyline points="17,8 12,3 7,8"/>
+                          <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                      </div>
+                      <h3 className="upload-title">Upload Your Image</h3>
+                      <p className="upload-description">Drag & drop an image here or click to browse</p>
+                      <div className="upload-specs">
+                        <span>• Supports JPG, PNG, WEBP</span>
+                        <span>• Max file size: 10MB</span>
+                        <span>• Best results with clear subjects</span>
+                      </div>
+                    </div>
+                  </div>
+                ) : isProcessing ? (
+                  /* Processing Area */
+                  <div className="processing-workspace">
+                    <div className="processing-content">
+                      <div className="processing-icon">
+                        <div className="processing-spinner"></div>
+                      </div>
+                      <h3 className="processing-title">Processing Your Image</h3>
+                      <p className="processing-description">Our AI is removing the background...</p>
+                      
+                      <div className="progress-section">
+                        <div className="progress-bar-modern">
+                          <div className="progress-fill-modern" style={{ width: `${progress}%` }}></div>
+                        </div>
+                        <div className="progress-info">
+                          <span className="progress-percentage">{progress}%</span>
+                          <span className="progress-status">
+                            {progress < 30 && "Uploading..."}
+                            {progress >= 30 && progress < 90 && "AI is working..."}
+                            {progress >= 90 && progress < 100 && "Finalizing..."}
+                            {progress === 100 && "Complete!"}
+                          </span>
+                        </div>
+                      </div>
+
+                      {showStuckMsg && (
+                        <div className="stuck-message-modern">
+                          <div className="stuck-icon">⏳</div>
+                          <span>Almost there! Adding finishing touches...</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  /* Results Area */
+                  <div className="results-workspace">
+                    <div className="image-comparison-modern">
+                      <div className="image-card">
+                        <h4 className="image-label">Original</h4>
+                        {selectedFile && (
+                          <div className="image-wrapper">
+                            <img
+                              src={URL.createObjectURL(selectedFile)}
+                              alt="Original"
+                              className="comparison-image"
+                            />
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="comparison-arrow">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <polyline points="9,18 15,12 9,6"/>
+                        </svg>
+                      </div>
+
+                      <div className="image-card">
+                        <h4 className="image-label">Background Removed</h4>
+                        <div className="image-wrapper processed">
+                          <div
+                            className="processed-background"
+                            style={{ backgroundColor: backgroundColor }}
+                          >
+                            <img
+                              src={processedImage}
+                              alt="Processed"
+                              className="comparison-image"
+                            />
+                          </div>
+                          <ColorPicker
+                            onColorChange={setBackgroundColor}
+                            currentColor={backgroundColor}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="action-buttons-modern">
+                      <button className="btn-primary" onClick={downloadImage} disabled={adblockOpen}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-15"/>
+                          <polyline points="7,10 12,15 17,10"/>
+                          <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Download Image
+                      </button>
+                      <button className="btn-secondary" onClick={resetApp} disabled={adblockOpen}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <polyline points="1,4 1,10 7,10"/>
+                          <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+                        </svg>
+                        Process Another
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Error Messages */}
+                {error && (
+                  <div className="error-card">
+                    <div className="error-icon">⚠️</div>
+                    <div className="error-content">
+                      <p className="error-message">{error}</p>
+                      {rateLimitError && rateLimitError.code === 'DAILY_LIMIT_EXCEEDED' && (
+                        <p className="error-help">Try again tomorrow or contact support.</p>
+                      )}
+                      {rateLimitError && rateLimitError.code === 'IP_BLOCKED' && (
+                        <p className="error-help">Your IP has been blocked. Try again tomorrow.</p>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
-            {error && (
-              <div className="error-message">
-                <p>{error}</p>
-                {rateLimitError && rateLimitError.code === 'DAILY_LIMIT_EXCEEDED' && (
-                  <p className="rate-limit-help">
-                    Try again tomorrow.
-                  </p>
-                )}
-                {rateLimitError && rateLimitError.code === 'IP_BLOCKED' && (
-                  <p className="rate-limit-help">
-                    Your IP has been blocked due to excessive usage. Try again tomorrow.
-                  </p>
-                )}
+            {/* Right Column - Information */}
+            <div className="info-column">
+              {/* Cost Monitor */}
+              <div className="info-card">
+                <CostMonitor />
               </div>
-            )}
 
-            {isProcessing && (
-              <div className="processing-section minimal">
-                <div className="processing-header">
-                  <div className="loading-spinner"></div>
-                  <h3>Processing Your Image…</h3>
-                </div>
-                <div className="progress-container minimal">
-                  <div className="progress-bar minimal">
-                    <div className="progress-fill minimal" style={{ width: `${progress}%` }}></div>
-                    <div className="progress-text minimal">{progress}%</div>
-                  </div>
-                </div>
-                <div className="processing-status-message">
-                  {progress < 30 && <span className="processing-status-text">Uploading…</span>}
-                  {progress >= 30 && progress < 90 && <span className="processing-status-text">AI is working…</span>}
-                  {progress >= 90 && progress < 100 && <span className="processing-status-text">Finalizing…</span>}
-                  {progress === 100 && <span className="processing-status-text">Done!</span>}
-                </div>
-                {showStuckMsg && (
-                  <div className="stuck-message minimal">
-                    <div className="stuck-spinner"></div>
-                    <span>Almost there! The AI is putting the finishing touches…</span>
-                  </div>
-                )}
+              {/* Transparency Note */}
+              <div className="info-card">
+                <h3 className="info-title">Transparent Pricing</h3>
+                <p className="info-text">
+                  We believe in full transparency. These are our real server costs for running this AI service.
+                  Your usage helps cover these expenses and keeps the service free for everyone.
+                </p>
+                <small className="info-note">Costs updated every 5 minutes via Railway's API</small>
               </div>
-            )}
+
+              {/* Features */}
+              <div className="info-card">
+                <h3 className="info-title">Features</h3>
+                <ul className="feature-list">
+                  <li>✓ High-quality AI background removal</li>
+                  <li>✓ Multiple AI models available</li>
+                  <li>✓ Fast processing (under 30 seconds)</li>
+                  <li>✓ Privacy-focused (no data storage)</li>
+                  <li>✓ Free to use with transparent costs</li>
+                </ul>
+              </div>
+            </div>
           </div>
 
-          {processedImage && (
-            <div className="results-section">
-              <div className="image-comparison">
-                <div className="image-container">
-                  <h3>Original</h3>
-                  {selectedFile && (
-                    <img
-                      src={URL.createObjectURL(selectedFile)}
-                      alt="Original"
-                      className="preview-image"
-                    />
-                  )}
-                </div>
-
-                <div className="image-container">
-                  <h3>Background Removed</h3>
-                  <div
-                    className="processed-image-container"
-                    style={{ backgroundColor: backgroundColor }}
-                  >
-                    <img
-                      src={processedImage}
-                      alt="Processed"
-                      className="preview-image"
-                    />
-                    <ColorPicker
-                      onColorChange={setBackgroundColor}
-                      currentColor={backgroundColor}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="action-buttons">
-                <button className="download-btn" onClick={downloadImage} disabled={adblockOpen} title={adblockOpen ? 'Enable ads to use this feature' : ''}>
-                  Download Image
-                </button>
-                <button className="reset-btn" onClick={resetApp} disabled={adblockOpen} title={adblockOpen ? 'Enable ads to use this feature' : ''}>
-                  Process Another Image
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Bottom Ad Space */}
+          {/* Ad Spaces */}
           <AdBanner adSlot="YOUR_BOTTOM_AD_SLOT" />
         </div>
       </main>
