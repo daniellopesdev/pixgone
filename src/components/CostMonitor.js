@@ -14,15 +14,14 @@ const CostMonitor = ({ compact = false }) => {
 
   const fetchCosts = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'https://pixgone-production.up.railway.app'}/railway-costs`);
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'https://pixgone-production.up.railway.app'}/rate-limit-info`);
       const data = await response.json();
-      
-      if (data.success) {
+      if (data && data.costs) {
         setCosts(data.costs);
-        setLastUpdated(new Date(data.last_updated));
+        setLastUpdated(new Date());
         setError(null);
       } else {
-        setError(data.error || 'Failed to fetch costs');
+        setError('Failed to fetch costs');
       }
     } catch (err) {
       setError('Unable to connect to cost monitoring');
@@ -64,42 +63,46 @@ const CostMonitor = ({ compact = false }) => {
     );
   }
 
-  return (
-    <div className={`cost-monitor ${compact ? 'compact' : ''}`}>
-      <div className="cost-header">
-        <h4>💰 {compact ? 'Server Costs' : 'Real-time Server Costs'}</h4>
-        <span className="cost-subtitle">This month {compact ? '' : '(transparent pricing)'}</span>
+  if (compact) {
+    // Minimal, single-line, icon + total only
+    return (
+      <div className="cost-monitor compact">
+        <span className="cost-label" title="Server Costs">💸</span>
+        <span className="cost-value total">{formatCurrency(costs.total_cost || 0)}</span>
       </div>
-      
+    );
+  }
+
+  return (
+    <div className={`cost-monitor`}>
+      <div className="cost-header">
+        <h4>Real-time Server Costs</h4>
+        <span className="cost-subtitle">This month (transparent pricing)</span>
+      </div>
       {error ? (
         <div className="cost-error">
-          <span>⚠️ {compact ? 'Cost data unavailable' : error}</span>
+          <span>⚠️ {error}</span>
         </div>
       ) : (
         <div className="cost-breakdown">
-          {!compact && (
-            <>
-              <div className="cost-item">
-                <span className="cost-label">🧠 CPU:</span>
-                <span className="cost-value">{formatCurrency(costs.cpu_cost)}</span>
-              </div>
-              <div className="cost-item">
-                <span className="cost-label">💾 Memory:</span>
-                <span className="cost-value">{formatCurrency(costs.memory_cost)}</span>
-              </div>
-              <div className="cost-item">
-                <span className="cost-label">🌐 Network:</span>
-                <span className="cost-value">{formatCurrency(costs.network_cost)}</span>
-              </div>
-            </>
-          )}
+          <div className="cost-item">
+            <span className="cost-label">🧠 CPU:</span>
+            <span className="cost-value">{formatCurrency(costs.cpu_cost || 0)}</span>
+          </div>
+          <div className="cost-item">
+            <span className="cost-label">💾 Memory:</span>
+            <span className="cost-value">{formatCurrency(costs.memory_cost || 0)}</span>
+          </div>
+          <div className="cost-item">
+            <span className="cost-label">🌐 Network:</span>
+            <span className="cost-value">{formatCurrency(costs.network_cost || 0)}</span>
+          </div>
           <div className="cost-total">
             <span className="cost-label">📊 Total:</span>
-            <span className="cost-value total">{formatCurrency(costs.total_cost)}</span>
+            <span className="cost-value total">{formatCurrency(costs.total_cost || 0)}</span>
           </div>
         </div>
       )}
-      
       {lastUpdated && !compact && (
         <div className="cost-footer">
           <span className="cost-timestamp">

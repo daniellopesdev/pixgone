@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, Response, Form, HTTPException, BackgroundTasks
+from fastapi import FastAPI, UploadFile, File, Response, Form, HTTPException, BackgroundTasks, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from PIL import Image
@@ -568,43 +568,38 @@ def calculate_costs(usage_data: list) -> dict:
     costs["total_cost"] = costs["cpu_cost"] + costs["memory_cost"] + costs["network_cost"]
     return costs
 
-@app.get("/railway-costs")
-async def get_railway_costs():
-    """Get current Railway project costs"""
-    try:
-        usage_data = await fetch_railway_usage()
-        
-        if not usage_data:
-            return {
-                "error": "Unable to fetch Railway usage data",
-                "costs": {
-                    "cpu_cost": 0.0,
-                    "memory_cost": 0.0,
-                    "network_cost": 0.0,
-                    "total_cost": 0.0
-                }
-            }
-        
+@app.get("/rate-limit-info")
+async def get_rate_limit_info(request: Request):
+    """Public endpoint to get current rate limit status for the requesting IP, now also includes server costs."""
+    client_ip = get_client_ip(request)
+    today = datetime.now().strftime("%Y-%m-%d")
+    key = f"{client_ip}:{today}"
+    
+    with storage_lock:
+        current_requests = daily_requests.get(key, 0)
+        is_blocked = client_ip in blocked_ips
+
+    # Fetch costs (reuse logic from /railway-costs)
+    usage_data = await fetch_railway_usage()
+    if usage_data:
         costs = calculate_costs(usage_data)
-        
-        return {
-            "success": True,
-            "costs": costs,
-            "last_updated": datetime.utcnow().isoformat() + "Z",
-            "currency": "USD"
+    else:
+        costs = {
+            "cpu_cost": 0.0,
+            "memory_cost": 0.0,
+            "network_cost": 0.0,
+            "total_cost": 0.0
         }
-        
-    except Exception as e:
-        logger.error(f"Error in railway-costs endpoint: {e}")
-        return {
-            "error": "Internal server error",
-            "costs": {
-                "cpu_cost": 0.0,
-                "memory_cost": 0.0,
-                "network_cost": 0.0,
-                "total_cost": 0.0
-            }
-        }
+
+    return {
+        "ip": client_ip,
+        "requests_today": current_requests,
+        "daily_limit": DAILY_LIMIT,
+        "remaining_requests": max(0, DAILY_LIMIT - current_requests),
+        "is_blocked": is_blocked,
+        "rate_limit": RATE_LIMIT,
+        "costs": costs
+    }
 
 if __name__ == "__main__":
     import uvicorn
