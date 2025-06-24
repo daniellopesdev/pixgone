@@ -54,12 +54,16 @@ function eraseAlphaEdge(image, edgeWidth = 2) {
     for (let i = 0; i < edgeMask.length; i++) edgeMask[i] = edgeMask[i] || newMask[i];
   }
 
-  // Erase edge pixels (set alpha to 0)
+  // Erase edge pixels (set alpha to 0, but for debug, color them red)
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
       if (edgeMask[y * width + x]) {
-        const idx = (y * width + x) * 4 + 3;
-        data[idx] = 0;
+        const idx = (y * width + x) * 4;
+        // For debug: color edge red
+        data[idx] = 255;     // R
+        data[idx + 1] = 0;   // G
+        data[idx + 2] = 0;   // B
+        data[idx + 3] = 255; // A
       }
     }
   }

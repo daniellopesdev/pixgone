@@ -8,6 +8,7 @@ import DonationStats from './components/DonationStats';
 import DonateButton from './components/DonateButton';
 import KofiWidgetEnhanced from './components/KofiWidgetEnhanced';
 import SmoothEdgesImage from './components/SmoothEdgesImage';
+import SmoothEdgesPreviewSlider from './components/SmoothEdgesPreviewSlider';
 import './App.css';
 
 const AdblockModal = ({ open, onBypass }) => (
@@ -49,9 +50,6 @@ function DonateModal({ open, onClose }) {
             frameBorder="0"
             allowtransparency="true"
           ></iframe>
-          <div style={{ marginTop: 16, fontSize: 14, color: '#64748b' }}>
-            100% of your donation goes to server costs.
-          </div>
         </div>
       </div>
     </div>
@@ -76,6 +74,7 @@ function App() {
   const [currentServerCost, setCurrentServerCost] = useState(0);
   const [donateModalOpen, setDonateModalOpen] = useState(false);
   const [smoothEdges, setSmoothEdges] = useState(false);
+  const [showSmoothEdgesPreview, setShowSmoothEdgesPreview] = useState(false);
   const fileInputRef = useRef(null);
   const progressInterval = useRef(null);
   const stuckTimeout = useRef(null);
@@ -621,7 +620,7 @@ function App() {
                         <div className="image-wrapper processed">
                           <div className="processed-background" style={{ backgroundColor: backgroundColor }}>
                             {smoothEdges ? (
-                              <SmoothEdgesImage src={processedImage} blurRadius={2} edgeWidth={2} />
+                              <SmoothEdgesImage src={processedImage} blurRadius={2} edgeWidth={5} />
                             ) : (
                               <img
                                 src={processedImage}
@@ -641,6 +640,13 @@ function App() {
                                 <path d="M3 16v3a2 2 0 0 0 2 2h3"/>
                                 <path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
                               </svg>
+                            </button>
+                            <button
+                              className="btn-secondary"
+                              style={{ marginTop: 8, width: '100%' }}
+                              onClick={() => setShowSmoothEdgesPreview(true)}
+                            >
+                              Compare Smooth Edges
                             </button>
                           </div>
                           <ColorPicker
@@ -779,6 +785,13 @@ function App() {
       
       <DonateModal open={donateModalOpen} onClose={() => setDonateModalOpen(false)} />
       <KofiWidgetEnhanced />
+
+      {showSmoothEdgesPreview && processedImage && (
+        <SmoothEdgesPreviewSlider
+          src={processedImage}
+          onClose={() => setShowSmoothEdgesPreview(false)}
+        />
+      )}
     </div>
   );
 }
