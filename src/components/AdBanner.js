@@ -1,21 +1,47 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import './AdBanner.css';
 
 const AdBanner = ({ adSlot, adFormat = 'auto', style = {} }) => {
+  const adRef = useRef(null);
+
   useEffect(() => {
-    // Load AdSense script if not already loaded
-    if (window.adsbygoogle) {
-      try {
-        (window.adsbygoogle = window.adsbygoogle || []).push({});
-      } catch (error) {
-        console.error('AdSense error:', error);
+    const loadAd = () => {
+      if (!adRef.current) return;
+
+      // Check if container has dimensions
+      const rect = adRef.current.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) {
+        // Retry after a short delay if container has no dimensions
+        setTimeout(loadAd, 100);
+        return;
       }
-    }
-  }, []);
+
+      // Check if AdSense is available
+      if (window.adsbygoogle) {
+        try {
+          (window.adsbygoogle = window.adsbygoogle || []).push({});
+        } catch (error) {
+          console.error('AdSense error:', error);
+        }
+      } else {
+        // Wait for AdSense to load
+        setTimeout(loadAd, 500);
+      }
+    };
+
+    // Initial load attempt
+    loadAd();
+
+    // Cleanup
+    return () => {
+      // Cleanup if needed
+    };
+  }, [adSlot, adFormat]);
 
   return (
     <div className="ad-banner" style={style}>
       <ins
+        ref={adRef}
         className="adsbygoogle"
         style={{ display: 'block' }}
         data-ad-client="ca-pub-5880272751774844"

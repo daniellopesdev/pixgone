@@ -4,21 +4,32 @@
   align-items: center;
   margin: 1rem 0;
   min-height: 90px;
+  min-width: 320px;
   background: #f8f9fa;
   border-radius: 8px;
   overflow: hidden;
+  position: relative;
 }
 
 .ad-banner ins {
   display: block;
   width: 100%;
   max-width: 728px;
+  min-width: 320px;
   height: 90px;
+  min-height: 50px;
 }
 
 @media (max-width: 768px) {
+  .ad-banner {
+    min-width: 320px;
+    min-height: 50px;
+  }
+  
   .ad-banner ins {
     max-width: 320px;
+    min-width: 320px;
     height: 50px;
+    min-height: 50px;
   }
 } 

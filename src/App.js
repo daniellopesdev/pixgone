@@ -7,7 +7,6 @@ import CostMonitor from './components/CostMonitor';
 import DonationStats from './components/DonationStats';
 import DonateButton from './components/DonateButton';
 import KofiWidgetEnhanced from './components/KofiWidgetEnhanced';
-import SmoothEdgesImage from './components/SmoothEdgesImage';
 import './App.css';
 
 const AdblockModal = ({ open, onBypass }) => (
@@ -72,7 +71,6 @@ function App() {
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [currentServerCost, setCurrentServerCost] = useState(0);
   const [donateModalOpen, setDonateModalOpen] = useState(false);
-  const [smoothEdges, setSmoothEdges] = useState(false);
   const fileInputRef = useRef(null);
   const progressInterval = useRef(null);
   const stuckTimeout = useRef(null);
@@ -410,46 +408,16 @@ function App() {
   // Image Preview Modal Component
   const ImagePreviewModal = () => (
     showPreviewModal && processedImage ? (
-      <div className="preview-modal-overlay" onClick={() => { setShowPreviewModal(false); setSmoothEdges(false); }}>
-        <div className="preview-modal" onClick={(e) => e.stopPropagation()}>
+      <div className="preview-modal-overlay" onClick={() => setShowPreviewModal(false)}>
+        <div className="preview-modal" onClick={e => e.stopPropagation()}>
           <div className="preview-modal-header">
             <h3>Image Preview</h3>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ fontSize: '14px', color: '#64748b' }}>Smooth Edges</span>
-                <button
-                  className={`toggle-btn ${smoothEdges ? 'active' : ''}`}
-                  onClick={() => setSmoothEdges(!smoothEdges)}
-                  style={{
-                    width: '40px',
-                    height: '20px',
-                    borderRadius: '10px',
-                    border: 'none',
-                    background: smoothEdges ? '#2563eb' : '#e2e8f0',
-                    cursor: 'pointer',
-                    position: 'relative',
-                    transition: 'background 0.2s'
-                  }}
-                >
-                  <div style={{
-                    width: '16px',
-                    height: '16px',
-                    borderRadius: '50%',
-                    background: 'white',
-                    position: 'absolute',
-                    top: '2px',
-                    left: smoothEdges ? '22px' : '2px',
-                    transition: 'left 0.2s'
-                  }} />
-                </button>
-              </div>
-              <button 
-                className="preview-close-btn"
-                onClick={() => { setShowPreviewModal(false); setSmoothEdges(false); }}
-              >
-                ×
-              </button>
-            </div>
+            <button 
+              className="preview-close-btn"
+              onClick={() => setShowPreviewModal(false)}
+            >
+              ×
+            </button>
           </div>
           <div className="preview-content">
             <div className="preview-image-container">
@@ -457,15 +425,11 @@ function App() {
                 className="preview-background"
                 style={{ backgroundColor: backgroundColor }}
               >
-                {smoothEdges ? (
-                  <SmoothEdgesImage src={processedImage} blurRadius={2} edgeWidth={5} />
-                ) : (
-                  <img
-                    src={processedImage}
-                    alt="Enlarged Preview"
-                    className="preview-image"
-                  />
-                )}
+                <img
+                  src={processedImage}
+                  alt="Enlarged Preview"
+                  className="preview-image"
+                />
               </div>
             </div>
             <div className="preview-controls">
@@ -664,18 +628,6 @@ function App() {
                                 <path d="M21 8V5a2 2 0 0 0-2-2h-3"/>
                                 <path d="M3 16v3a2 2 0 0 0 2 2h3"/>
                                 <path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
-                              </svg>
-                            </button>
-                            {/* Smooth Edges Button */}
-                            <button 
-                              className="smooth-edges-btn"
-                              onClick={() => setShowPreviewModal(true)}
-                              title="Smooth edges"
-                            >
-                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <circle cx="12" cy="12" r="3"/>
-                                <path d="M12 1v6m0 6v6"/>
-                                <path d="M1 12h6m6 0h6"/>
                               </svg>
                             </button>
                           </div>
