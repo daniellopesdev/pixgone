@@ -37,6 +37,8 @@
   position: relative;
   overflow: hidden;
   color: white;
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
 }
 
 .hero-content {
@@ -126,62 +128,22 @@
   animation: arrowBounce 2s ease-in-out infinite;
 }
 
-/* Floating Background Elements */
-.hero-bg-elements {
+/* Pixel Grid Animation - Full Hero Coverage */
+.pixel-grid-animation {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  pointer-events: none;
-  overflow: hidden;
-}
-
-.floating-element {
-  position: absolute;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 50%;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.element-1 {
-  width: 120px;
-  height: 120px;
-  top: 10%;
-  left: 10%;
-  animation: float1 20s ease-in-out infinite;
-}
-
-.element-2 {
-  width: 80px;
-  height: 80px;
-  top: 60%;
-  right: 15%;
-  animation: float2 15s ease-in-out infinite reverse;
-}
-
-.element-3 {
-  width: 60px;
-  height: 60px;
-  bottom: 20%;
-  left: 20%;
-  animation: float3 18s ease-in-out infinite;
-}
-
-/* Pixel Grid Animation - Background Removal Effect */
-.pixel-grid-animation {
-  position: absolute;
-  top: 20%;
-  right: 10%;
-  width: 100px;
-  height: 100px;
+  width: 100%;
+  height: 100%;
   display: grid;
-  grid-template-columns: repeat(10, 1fr);
-  grid-template-rows: repeat(10, 1fr);
+  grid-template-columns: repeat(20, 1fr);
+  grid-template-rows: repeat(20, 1fr);
   gap: 1px;
-  opacity: 0.6;
+  opacity: 0.4;
   z-index: 1;
+  pointer-events: none;
 }
 
 .pixel {
@@ -256,131 +218,6 @@
     transform: scale(0);
     background: transparent;
     filter: brightness(0);
-  }
-}
-
-/* Additional pixel grid for larger screens */
-@media (min-width: 1200px) {
-  .hero-bg-elements::before {
-    content: '';
-    position: absolute;
-    top: 15%;
-    left: 15%;
-    width: 80px;
-    height: 80px;
-    background-image: 
-      repeating-linear-gradient(0deg, rgba(255,255,255,0.1), rgba(255,255,255,0.1) 8px, transparent 8px, transparent 16px),
-      repeating-linear-gradient(90deg, rgba(255,255,255,0.1), rgba(255,255,255,0.1) 8px, transparent 8px, transparent 16px);
-    animation: gridFadeOut 6s ease-in-out infinite;
-    opacity: 0.3;
-  }
-  
-  .hero-bg-elements::after {
-    content: '';
-    position: absolute;
-    bottom: 20%;
-    right: 20%;
-    width: 60px;
-    height: 60px;
-    background-image: 
-      repeating-linear-gradient(0deg, rgba(255,255,255,0.15), rgba(255,255,255,0.15) 6px, transparent 6px, transparent 12px),
-      repeating-linear-gradient(90deg, rgba(255,255,255,0.15), rgba(255,255,255,0.15) 6px, transparent 6px, transparent 12px);
-    animation: gridFadeOut 8s ease-in-out 2s infinite;
-    opacity: 0.4;
-  }
-}
-
-@keyframes gridFadeOut {
-  0%, 20% {
-    opacity: 0.4;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.2;
-    transform: scale(0.9);
-  }
-  80%, 100% {
-    opacity: 0;
-    transform: scale(0.8);
-  }
-}
-
-/* Animations */
-@keyframes gradientShift {
-  0%, 100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-}
-
-@keyframes titleGlow {
-  0% {
-    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
-  }
-  100% {
-    filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.6));
-  }
-}
-
-@keyframes subtitleFloat {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-5px);
-  }
-}
-
-@keyframes ctaFloat {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
-}
-
-@keyframes arrowBounce {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-3px);
-  }
-}
-
-@keyframes float1 {
-  0%, 100% {
-    transform: translate(0px, 0px) rotate(0deg);
-  }
-  33% {
-    transform: translate(30px, -30px) rotate(120deg);
-  }
-  66% {
-    transform: translate(-20px, 20px) rotate(240deg);
-  }
-}
-
-@keyframes float2 {
-  0%, 100% {
-    transform: translate(0px, 0px) rotate(0deg);
-  }
-  50% {
-    transform: translate(-40px, -20px) rotate(180deg);
-  }
-}
-
-@keyframes float3 {
-  0%, 100% {
-    transform: translate(0px, 0px) rotate(0deg);
-  }
-  25% {
-    transform: translate(20px, -40px) rotate(90deg);
-  }
-  75% {
-    transform: translate(-30px, 10px) rotate(270deg);
   }
 }
 
@@ -841,8 +678,24 @@
 
 .error-help {
   font-size: 0.875rem;
-  color: #991b1b;
-  margin: 0;
+  color: #64748b;
+  margin-top: 0.5rem;
+}
+
+.donate-link-error {
+  display: inline-block;
+  background: #dc2626;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  margin-top: 0.5rem;
+  transition: background-color 0.2s ease;
+}
+
+.donate-link-error:hover {
+  background: #b91c1c;
 }
 
 /* Right Column - Information */
@@ -1134,10 +987,6 @@
   .enlarge-btn svg {
     width: 16px;
     height: 16px;
-  }
-
-  .floating-element {
-    display: none; /* Hide floating elements on mobile for performance */
   }
 
   .pixel-grid-animation {
@@ -1617,5 +1466,51 @@
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* Animations */
+@keyframes gradientShift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes titleGlow {
+  0% {
+    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
+  }
+  100% {
+    filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.6));
+  }
+}
+
+@keyframes subtitleFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes ctaFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes arrowBounce {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
 }
 

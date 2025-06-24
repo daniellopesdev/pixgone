@@ -1,0 +1,260 @@
+.donation-stats {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e2e8f0;
+  margin-bottom: 1.5rem;
+}
+
+.stats-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.stats-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.app-status {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.app-status.enabled {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.app-status.disabled {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.budget-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.budget-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.budget-label {
+  font-size: 0.875rem;
+  color: #64748b;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.budget-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+}
+
+.budget-value.negative {
+  color: #dc2626;
+}
+
+.usage-progress {
+  margin-bottom: 1.5rem;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #10b981;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.service-disabled {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.service-disabled p {
+  margin: 0 0 1rem 0;
+  color: #dc2626;
+  font-weight: 500;
+}
+
+.donate-button {
+  display: inline-block;
+  background: #dc2626;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+
+.donate-button:hover {
+  background: #b91c1c;
+}
+
+.top-contributors {
+  margin-bottom: 1.5rem;
+}
+
+.top-contributors h4 {
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.contributors-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.contributor {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.contributor-name {
+  font-weight: 500;
+  color: #1a1a1a;
+}
+
+.contributor-amount {
+  font-weight: 700;
+  color: #059669;
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+}
+
+.donation-cta {
+  text-align: center;
+  padding: 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  color: white;
+}
+
+.donation-cta p {
+  margin: 0 0 1rem 0;
+  font-weight: 500;
+}
+
+.donate-link {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.2s ease;
+}
+
+.donate-link:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.stats-loading,
+.stats-error {
+  text-align: center;
+  padding: 2rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.stats-error {
+  color: #dc2626;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .donation-stats {
+    padding: 1rem;
+  }
+  
+  .stats-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+  
+  .budget-overview {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  
+  .budget-item {
+    padding: 0.75rem;
+  }
+  
+  .contributor {
+    padding: 0.5rem;
+  }
+  
+  .donation-cta {
+    padding: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-header h3 {
+    font-size: 1.125rem;
+  }
+  
+  .budget-value {
+    font-size: 1.125rem;
+  }
+  
+  .contributor-name,
+  .contributor-amount {
+    font-size: 0.875rem;
+  }
+} 

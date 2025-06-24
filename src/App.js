@@ -4,6 +4,7 @@ import Footer from './components/Footer';
 import ColorPicker from './components/ColorPicker';
 import AdBanner from './components/AdBanner';
 import CostMonitor from './components/CostMonitor';
+import DonationStats from './components/DonationStats';
 import './App.css';
 
 const AdblockModal = ({ open, onBypass }) => (
@@ -457,33 +458,26 @@ function App() {
               </button>
             </div>
             
-            {/* Animated Background Elements */}
-            <div className="hero-bg-elements">
-              <div className="floating-element element-1"></div>
-              <div className="floating-element element-2"></div>
-              <div className="floating-element element-3"></div>
-              
-              {/* Pixel Grid Animation */}
-              <div className="pixel-grid-animation">
-                {Array.from({ length: 100 }, (_, i) => {
-                  const row = Math.floor(i / 10);
-                  const col = i % 10;
-                  const distanceFromCenter = Math.sqrt(Math.pow(row - 4.5, 2) + Math.pow(col - 4.5, 2));
-                  const waveDelay = distanceFromCenter * 0.3;
-                  
-                  return (
-                    <div 
-                      key={i} 
-                      className="pixel" 
-                      style={{
-                        '--delay': `${waveDelay + Math.random() * 2}s`,
-                        '--duration': `${3 + Math.random() * 2}s`,
-                        '--intensity': Math.random() > 0.7 ? '1' : '0.8'
-                      }}
-                    ></div>
-                  );
-                })}
-              </div>
+            {/* Pixel Grid Animation - Full Hero Coverage */}
+            <div className="pixel-grid-animation">
+              {Array.from({ length: 400 }, (_, i) => {
+                const row = Math.floor(i / 20);
+                const col = i % 20;
+                const distanceFromCenter = Math.sqrt(Math.pow(row - 9.5, 2) + Math.pow(col - 9.5, 2));
+                const waveDelay = distanceFromCenter * 0.2;
+                
+                return (
+                  <div 
+                    key={i} 
+                    className="pixel" 
+                    style={{
+                      '--delay': `${waveDelay + Math.random() * 3}s`,
+                      '--duration': `${4 + Math.random() * 3}s`,
+                      '--intensity': Math.random() > 0.6 ? '1' : '0.7'
+                    }}
+                  ></div>
+                );
+              })}
             </div>
           </div>
 
@@ -663,6 +657,19 @@ function App() {
                       {rateLimitError && rateLimitError.code === 'IP_BLOCKED' && (
                         <p className="error-help">Your IP has been blocked. Try again tomorrow.</p>
                       )}
+                      {rateLimitError && rateLimitError.code === 'SERVICE_DISABLED' && (
+                        <div className="error-help">
+                          <p>Service is temporarily disabled due to cost limits.</p>
+                          <a 
+                            href="https://ko-fi.com/daniellopesdev" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="donate-link-error"
+                          >
+                            Donate to Keep It Running
+                          </a>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -671,32 +678,8 @@ function App() {
 
             {/* Right Column - Server Costs & Info */}
             <div className="info-column">
-              {/* Server Costs - Aligned Right */}
-              <div className="server-costs-card">
-                <CostMonitor />
-                
-                {/* Transparency Info Toggler */}
-                <div className="transparency-toggler">
-                  <button 
-                    className="transparency-toggle-btn"
-                    onClick={() => setShowTransparencyInfo(!showTransparencyInfo)}
-                  >
-                    <span>Transparency Info</span>
-                    <span className={`toggle-icon ${showTransparencyInfo ? 'open' : ''}`}>▼</span>
-                  </button>
-                  
-                  {showTransparencyInfo && (
-                    <div className="transparency-info">
-                      <h4>Transparent Pricing</h4>
-                      <p>
-                        We believe in full transparency. These are our real server costs for running this AI service. 
-                        Your usage helps cover these expenses and keeps the service free for everyone.
-                      </p>
-                      <small>Costs updated every 5 minutes via Railway's API</small>
-                    </div>
-                  )}
-                </div>
-              </div>
+              {/* Community Support & Donation Stats */}
+              <DonationStats />
 
               {/* Sidebar Ad Space */}
               <div className="ad-section sidebar-ad">

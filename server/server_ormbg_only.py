@@ -17,6 +17,9 @@ import shutil
 import requests
 import logging
 from typing import Optional
+import sqlite3
+import hashlib
+import hmac
 
 print("=== Starting PixGone Server ===")
 print(f"Python version: {sys.version}")
@@ -30,6 +33,14 @@ logger = logging.getLogger(__name__)
 RAILWAY_API_URL = "https://backboard.railway.app/graphql/v2"
 RAILWAY_API_TOKEN = os.getenv("RAILWAY_API_TOKEN")
 RAILWAY_PROJECT_ID = os.getenv("RAILWAY_PROJECT_ID")
+
+# Ko-fi webhook configuration
+KOFI_WEBHOOK_SECRET = os.getenv("KOFI_WEBHOOK_SECRET")
+KOFI_VERIFICATION_TOKEN = os.getenv("KOFI_VERIFICATION_TOKEN")
+
+# App cost threshold configuration
+BASE_THRESHOLD = float(os.getenv("BASE_THRESHOLD", "5.0"))  # $5 base threshold
+DONATION_DB_PATH = "donations.db"
 
 # Railway pricing (per Railway docs)
 RAILWAY_PRICING = {
@@ -154,6 +165,148 @@ if RAILWAY_API_TOKEN == "*****":
 if RAILWAY_PROJECT_ID == "*****":
     print("  ⚠️ RAILWAY_PROJECT_ID appears to be a placeholder ('*****')")
 print("")
+
+# Database initialization for donations
+def init_donation_db():
+    """Initialize SQLite database for donation tracking"""
+    try:
+        conn = sqlite3.connect(DONATION_DB_PATH)
+        cursor = conn.cursor()
+        
+        # Create donations table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS donations (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                kofi_id TEXT UNIQUE,
+                donor_name TEXT,
+                amount REAL,
+                message TEXT,
+                currency TEXT DEFAULT 'USD',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                month_year TEXT
+            )
+        ''')
+        
+        # Create index for efficient queries
+        cursor.execute('''
+            CREATE INDEX IF NOT EXISTS idx_month_year 
+            ON donations(month_year)
+        ''')
+        
+        cursor.execute('''
+            CREATE INDEX IF NOT EXISTS idx_kofi_id 
+            ON donations(kofi_id)
+        ''')
+        
+        conn.commit()
+        conn.close()
+        print("✅ Donation database initialized")
+        
+    except Exception as e:
+        print(f"❌ Error initializing donation database: {e}")
+
+# Initialize database on startup
+init_donation_db()
+
+def get_current_month_donations() -> float:
+    """Get total donations for current month"""
+    try:
+        conn = sqlite3.connect(DONATION_DB_PATH)
+        cursor = conn.cursor()
+        
+        current_month = datetime.now().strftime("%Y-%m")
+        cursor.execute('''
+            SELECT COALESCE(SUM(amount), 0) 
+            FROM donations 
+            WHERE month_year = ?
+        ''', (current_month,))
+        
+        total = cursor.fetchone()[0]
+        conn.close()
+        return float(total)
+        
+    except Exception as e:
+        logger.error(f"Error getting current month donations: {e}")
+        return 0.0
+
+def get_top_contributors(limit: int = 10) -> list:
+    """Get top contributors for current month"""
+    try:
+        conn = sqlite3.connect(DONATION_DB_PATH)
+        cursor = conn.cursor()
+        
+        current_month = datetime.now().strftime("%Y-%m")
+        cursor.execute('''
+            SELECT donor_name, SUM(amount) as total_amount
+            FROM donations 
+            WHERE month_year = ? AND donor_name IS NOT NULL
+            GROUP BY donor_name
+            ORDER BY total_amount DESC
+            LIMIT ?
+        ''', (current_month, limit))
+        
+        contributors = [
+            {"name": row[0], "amount": float(row[1])} 
+            for row in cursor.fetchall()
+        ]
+        conn.close()
+        return contributors
+        
+    except Exception as e:
+        logger.error(f"Error getting top contributors: {e}")
+        return []
+
+def is_app_enabled() -> dict:
+    """Check if app should be enabled based on costs vs donations"""
+    try:
+        current_cost = 0.0
+        if RAILWAY_API_TOKEN and RAILWAY_PROJECT_ID:
+            usage_data = fetch_railway_usage()
+            if usage_data:
+                costs = calculate_costs(usage_data)
+                current_cost = costs.get("total_cost", 0.0)
+        
+        monthly_donations = get_current_month_donations()
+        available_budget = monthly_donations - current_cost
+        is_enabled = available_budget > 0
+        
+        return {
+            "enabled": is_enabled,
+            "current_cost": round(current_cost, 2),
+            "monthly_donations": round(monthly_donations, 2),
+            "available_budget": round(available_budget, 2),
+            "base_threshold": BASE_THRESHOLD,
+            "reason": None if is_enabled else "Monthly budget exceeded"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error checking app status: {e}")
+        return {
+            "enabled": True,  # Default to enabled if error
+            "current_cost": 0.0,
+            "monthly_donations": 0.0,
+            "available_budget": 0.0,
+            "base_threshold": BASE_THRESHOLD,
+            "reason": "Error checking status"
+        }
+
+def verify_kofi_webhook(payload: str, signature: str) -> bool:
+    """Verify Ko-fi webhook signature"""
+    if not KOFI_WEBHOOK_SECRET:
+        logger.warning("KOFI_WEBHOOK_SECRET not configured, skipping verification")
+        return True
+    
+    try:
+        expected_signature = hmac.new(
+            KOFI_WEBHOOK_SECRET.encode('utf-8'),
+            payload.encode('utf-8'),
+            hashlib.sha256
+        ).hexdigest()
+        
+        return hmac.compare_digest(signature, expected_signature)
+    except Exception as e:
+        logger.error(f"Error verifying webhook signature: {e}")
+        return False
 
 async def fetch_railway_usage() -> Optional[dict]:
     """Fetch current Railway project usage via GraphQL API"""
@@ -457,6 +610,19 @@ async def remove_background(request: Request, file: UploadFile = File(...)):
             }
         )
     
+    # Check if app is enabled based on costs vs donations
+    app_status = is_app_enabled()
+    if not app_status["enabled"]:
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "error": "Service temporarily unavailable",
+                "message": "Service is currently disabled due to cost limits. Please donate to help keep it running!",
+                "code": "SERVICE_DISABLED",
+                "app_status": app_status
+            }
+        )
+    
     try:
         # Validate file
         if not file.content_type or not file.content_type.startswith('image/'):
@@ -600,7 +766,7 @@ async def unblock_ip(ip: str, request: Request):
 
 @app.get("/rate-limit-info")
 async def get_rate_limit_info(request: Request):
-    """Public endpoint to get current rate limit status for the requesting IP, now also includes server costs."""
+    """Public endpoint to get current rate limit status for the requesting IP, now also includes server costs and app status."""
     client_ip = get_client_ip(request)
     today = datetime.now().strftime("%Y-%m-%d")
     key = f"{client_ip}:{today}"
@@ -624,6 +790,9 @@ async def get_rate_limit_info(request: Request):
             "network_cost": 0.0,
             "total_cost": 0.0
         }
+    
+    # Get app status
+    app_status = is_app_enabled()
         
     response_data = {
         "ip": client_ip,
@@ -632,7 +801,8 @@ async def get_rate_limit_info(request: Request):
         "remaining_requests": max(0, DAILY_LIMIT - current_requests),
         "is_blocked": is_blocked,
         "rate_limit": RATE_LIMIT,
-        "costs": costs
+        "costs": costs,
+        "app_status": app_status
     }
     
     # Add debug info if in development or if costs are zero
@@ -708,6 +878,117 @@ async def debug_railway_costs():
         debug_info["calculated_costs"] = "Error fetching data"
     
     return debug_info
+
+# Donation and App Status Endpoints
+@app.post("/webhook/kofi")
+async def kofi_webhook(request: Request):
+    """Handle Ko-fi donation webhooks"""
+    try:
+        # Get the raw body for signature verification
+        body = await request.body()
+        payload = body.decode('utf-8')
+        
+        # Verify webhook signature
+        signature = request.headers.get("X-Ko-Fi-Signature", "")
+        if not verify_kofi_webhook(payload, signature):
+            logger.warning("Invalid webhook signature")
+            raise HTTPException(status_code=401, detail="Invalid signature")
+        
+        # Parse the webhook data
+        data = json.loads(payload)
+        logger.info(f"Received Ko-fi webhook: {data}")
+        
+        # Extract donation information
+        donation_data = data.get("data", {})
+        kofi_id = donation_data.get("id")
+        donor_name = donation_data.get("from_name", "Anonymous")
+        amount = float(donation_data.get("amount", 0))
+        message = donation_data.get("message", "")
+        currency = donation_data.get("currency", "USD")
+        
+        if not kofi_id or amount <= 0:
+            raise HTTPException(status_code=400, detail="Invalid donation data")
+        
+        # Store donation in database
+        try:
+            conn = sqlite3.connect(DONATION_DB_PATH)
+            cursor = conn.cursor()
+            
+            current_month = datetime.now().strftime("%Y-%m")
+            
+            cursor.execute('''
+                INSERT OR IGNORE INTO donations 
+                (kofi_id, donor_name, amount, message, currency, month_year)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ''', (kofi_id, donor_name, amount, message, currency, current_month))
+            
+            conn.commit()
+            conn.close()
+            
+            logger.info(f"Donation stored: {donor_name} - ${amount}")
+            
+        except Exception as e:
+            logger.error(f"Error storing donation: {e}")
+            raise HTTPException(status_code=500, detail="Error storing donation")
+        
+        return {"status": "success", "message": "Donation recorded"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error processing Ko-fi webhook: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@app.get("/api/app-status")
+async def get_app_status():
+    """Get current app status (enabled/disabled based on costs vs donations)"""
+    try:
+        status = is_app_enabled()
+        logger.info(f"App status: {status}")
+        return status
+        
+    except Exception as e:
+        logger.error(f"Error getting app status: {e}")
+        raise HTTPException(status_code=500, detail="Error checking app status")
+
+@app.get("/api/donations/stats")
+async def get_donation_stats():
+    """Get donation statistics"""
+    try:
+        current_month = datetime.now().strftime("%Y-%m")
+        monthly_donations = get_current_month_donations()
+        top_contributors = get_top_contributors(10)
+        
+        # Get donation count for current month
+        conn = sqlite3.connect(DONATION_DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT COUNT(*) FROM donations WHERE month_year = ?
+        ''', (current_month,))
+        donation_count = cursor.fetchone()[0]
+        conn.close()
+        
+        return {
+            "current_month": current_month,
+            "total_donations": round(monthly_donations, 2),
+            "donation_count": donation_count,
+            "top_contributors": top_contributors
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting donation stats: {e}")
+        raise HTTPException(status_code=500, detail="Error fetching donation stats")
+
+@app.get("/api/donations/top-contributors")
+async def get_top_contributors_endpoint(limit: int = 10):
+    """Get top contributors for current month"""
+    try:
+        contributors = get_top_contributors(limit)
+        return {"contributors": contributors}
+        
+    except Exception as e:
+        logger.error(f"Error getting top contributors: {e}")
+        raise HTTPException(status_code=500, detail="Error fetching contributors")
 
 if __name__ == "__main__":
     import uvicorn
