@@ -2,6 +2,124 @@
 
 This guide explains how to set up Railway API integration to display real-time server costs on your Pixgone frontend.
 
+## 🚨 **CURRENT ISSUE: Missing Railway Credentials**
+
+You're getting zero costs because the Railway API credentials are not configured. The server logs show:
+```
+WARNING:__main__:Railway API token or project ID not configured
+```
+
+## 🚀 **STEP-BY-STEP FIX**
+
+### **Step 1: Get Railway API Token**
+
+1. **Go to [Railway Dashboard](https://railway.app/dashboard)**
+2. **Click your profile picture** (top right corner)
+3. **Go to "Account Settings"**
+4. **Navigate to "Tokens" section**
+5. **Click "Create Token"**
+6. **Name it:** `Pixgone Cost Monitor`
+7. **Copy the generated token** (starts with `railway_`)
+
+### **Step 2: Get Project ID**
+
+1. **Go to your Railway project dashboard**
+2. **Click on "Settings"** (gear icon in left sidebar)
+3. **Look for "Project ID"** in the General section
+4. **Copy the Project ID** (usually a UUID format)
+
+### **Step 3: Set Environment Variables in Railway**
+
+1. **In your Railway project dashboard**
+2. **Click on your backend service**
+3. **Go to "Variables" tab**
+4. **Add these two variables:**
+   ```
+   RAILWAY_API_TOKEN=railway_your_token_here
+   RAILWAY_PROJECT_ID=your_project_id_here
+   ```
+5. **Click "Deploy"** to restart with new variables
+
+### **Step 4: Verify Setup**
+
+After deployment, test the debug endpoint:
+```bash
+curl "https://your-backend-url.railway.app/debug/railway-costs"
+```
+
+Expected response:
+```json
+{
+  "railway_config": {
+    "has_api_token": true,
+    "has_project_id": true,
+    "token_length": 50
+  },
+  "calculated_costs": {
+    "cpu_cost": 0.02,
+    "memory_cost": 0.22,
+    "network_cost": 0.0,
+    "total_cost": 0.24
+  }
+}
+```
+
+## 🔍 **TROUBLESHOOTING**
+
+### **Still Getting Zero Costs?**
+
+1. **Check Variables:** Ensure both variables are set correctly
+2. **Check Token Format:** Should start with `railway_`
+3. **Check Project ID:** Should be UUID format like `abc12345-6789-...`
+4. **Check Logs:** Look for any new error messages
+
+### **Test the Debug Endpoint**
+
+```bash
+# Test if API is working
+curl "https://your-backend-url.railway.app/debug/railway-costs"
+
+# Check current rate limit info
+curl "https://your-backend-url.railway.app/rate-limit-info"
+```
+
+## 🎯 **EXPECTED RESULTS**
+
+After setting up the credentials, your `/rate-limit-info` should return:
+```json
+{
+  "ip": "...",
+  "requests_today": 0,
+  "daily_limit": 50,
+  "remaining_requests": 50,
+  "is_blocked": false,
+  "rate_limit": "10/minute",
+  "costs": {
+    "cpu_cost": 0.02,
+    "memory_cost": 0.22,
+    "network_cost": 0.0,
+    "total_cost": 0.24
+  }
+}
+```
+
+## 🔐 **SECURITY NOTES**
+
+- **Keep API token secure** - never commit to git
+- **Use environment variables only**
+- **Token has read-only access** to usage data
+- **Regenerate token if compromised**
+
+## 📱 **Frontend Integration**
+
+Once the backend returns real costs, your frontend will automatically display:
+- Real-time server costs
+- CPU, Memory, Network breakdown  
+- Total monthly cost estimate
+- Cost transparency for users
+
+No frontend changes needed - it will work automatically once the backend API returns real data instead of zeros!
+
 ## 🚀 Quick Setup
 
 ### 1. Get Railway API Token

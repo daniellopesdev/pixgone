@@ -137,11 +137,15 @@ async def fetch_railway_usage() -> Optional[dict]:
     """Fetch current Railway project usage via GraphQL API"""
     if not RAILWAY_API_TOKEN or not RAILWAY_PROJECT_ID:
         logger.warning("Railway API token or project ID not configured")
+        logger.info(f"RAILWAY_API_TOKEN exists: {bool(RAILWAY_API_TOKEN)}")
+        logger.info(f"RAILWAY_PROJECT_ID exists: {bool(RAILWAY_PROJECT_ID)}")
         return None
     
     # Query for current month usage
     now = datetime.utcnow()
     start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    
+    logger.info(f"Fetching Railway usage from {start_of_month} to {now}")
     
     query = """
     query GetUsage($projectId: String!, $startDate: DateTime!, $endDate: DateTime!) {
@@ -168,6 +172,8 @@ async def fetch_railway_usage() -> Optional[dict]:
         "Content-Type": "application/json"
     }
     
+    logger.info(f"Railway API request variables: {variables}")
+    
     try:
         response = requests.post(
             RAILWAY_API_URL,
@@ -176,12 +182,18 @@ async def fetch_railway_usage() -> Optional[dict]:
             timeout=10
         )
         
+        logger.info(f"Railway API response status: {response.status_code}")
+        
         if response.status_code == 200:
             data = response.json()
+            logger.info(f"Railway API response data: {data}")
+            
             if "data" in data and "usage" in data["data"]:
-                return data["data"]["usage"]
+                usage_data = data["data"]["usage"]
+                logger.info(f"Railway usage data: {usage_data}")
+                return usage_data
             else:
-                logger.error(f"Unexpected Railway API response: {data}")
+                logger.error(f"Unexpected Railway API response structure: {data}")
                 return None
         else:
             logger.error(f"Railway API request failed: {response.status_code} - {response.text}")
@@ -200,20 +212,34 @@ def calculate_costs(usage_data: list) -> dict:
         "total_cost": 0.0
     }
     
+    logger.info(f"Calculating costs from usage data: {usage_data}")
+    
+    if not usage_data:
+        logger.warning("No usage data provided for cost calculation")
+        return costs
+    
     for item in usage_data:
         measurement = item.get("measurement")
         value = float(item.get("value", 0))
         
+        logger.info(f"Processing measurement: {measurement}, value: {value}")
+        
         if measurement == "CPU_USAGE":
             # Convert vCPU-minutes to monthly cost estimate
             costs["cpu_cost"] = (value / (30 * 24 * 60)) * RAILWAY_PRICING["CPU_USAGE"]
+            logger.info(f"CPU cost calculated: ${costs['cpu_cost']:.4f}")
         elif measurement == "MEMORY_USAGE_GB":
             # Convert GB-minutes to monthly cost estimate  
             costs["memory_cost"] = (value / (30 * 24 * 60)) * RAILWAY_PRICING["MEMORY_USAGE_GB"]
+            logger.info(f"Memory cost calculated: ${costs['memory_cost']:.4f}")
         elif measurement == "NETWORK_TX_GB":
             costs["network_cost"] = value * RAILWAY_PRICING["NETWORK_TX_GB"]
+            logger.info(f"Network cost calculated: ${costs['network_cost']:.4f}")
+        else:
+            logger.warning(f"Unknown measurement type: {measurement}")
     
     costs["total_cost"] = costs["cpu_cost"] + costs["memory_cost"] + costs["network_cost"]
+    logger.info(f"Final calculated costs: {costs}")
     return costs
 
 def try_import_ormbg():
@@ -562,10 +588,14 @@ async def get_rate_limit_info(request: Request):
         is_blocked = client_ip in blocked_ips
 
     # Fetch costs (Railway API integration)
+    logger.info("Fetching Railway usage for rate-limit-info endpoint")
     usage_data = await fetch_railway_usage()
+    
     if usage_data:
+        logger.info(f"Usage data received, calculating costs")
         costs = calculate_costs(usage_data)
     else:
+        logger.warning("No usage data available, returning zero costs")
         costs = {
             "cpu_cost": 0.0,
             "memory_cost": 0.0,
@@ -573,7 +603,7 @@ async def get_rate_limit_info(request: Request):
             "total_cost": 0.0
         }
         
-    return {
+    response_data = {
         "ip": client_ip,
         "requests_today": current_requests,
         "daily_limit": DAILY_LIMIT,
@@ -582,6 +612,17 @@ async def get_rate_limit_info(request: Request):
         "rate_limit": RATE_LIMIT,
         "costs": costs
     }
+    
+    # Add debug info if in development or if costs are zero
+    if costs["total_cost"] == 0.0:
+        response_data["debug"] = {
+            "railway_api_configured": bool(RAILWAY_API_TOKEN and RAILWAY_PROJECT_ID),
+            "usage_data_received": bool(usage_data),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    
+    logger.info(f"Returning rate limit info: {response_data}")
+    return response_data
 
 @app.get("/debug/model")
 async def debug_model():
@@ -612,6 +653,37 @@ async def debug_model():
             debug_info["directory_error"] = str(e)
     else:
         debug_info["directory_exists"] = False
+    
+    return debug_info
+
+@app.get("/debug/railway-costs")
+async def debug_railway_costs():
+    """Debug endpoint to test Railway API integration and cost calculation"""
+    debug_info = {
+        "railway_config": {
+            "api_url": RAILWAY_API_URL,
+            "has_api_token": bool(RAILWAY_API_TOKEN),
+            "has_project_id": bool(RAILWAY_PROJECT_ID),
+            "token_length": len(RAILWAY_API_TOKEN) if RAILWAY_API_TOKEN else 0,
+            "project_id": RAILWAY_PROJECT_ID if RAILWAY_PROJECT_ID else "Not set"
+        },
+        "pricing": RAILWAY_PRICING
+    }
+    
+    # Try to fetch usage data
+    try:
+        usage_data = await fetch_railway_usage()
+        debug_info["usage_data"] = usage_data
+        
+        if usage_data:
+            costs = calculate_costs(usage_data)
+            debug_info["calculated_costs"] = costs
+        else:
+            debug_info["calculated_costs"] = "No usage data available"
+            
+    except Exception as e:
+        debug_info["error"] = str(e)
+        debug_info["calculated_costs"] = "Error fetching data"
     
     return debug_info
 

@@ -6,7 +6,7 @@ import AdBanner from './components/AdBanner';
 import CostMonitor from './components/CostMonitor';
 import './App.css';
 
-const AdblockModal = ({ open }) => (
+const AdblockModal = ({ open, onBypass }) => (
   open ? (
     <div className="adblock-modal-overlay" id="adblock-overlay">
       <div className="adblock-modal" id="adblock-modal">
@@ -17,6 +17,12 @@ const AdblockModal = ({ open }) => (
           We only show a few ads to keep it free.<br />
           <small>Refresh the page after disabling AdBlock.</small>
         </p>
+        <div className="adblock-actions">
+          <button className="bypass-btn" onClick={onBypass}>
+            Continue Anyway
+          </button>
+          <small>Click if you believe this is an error</small>
+        </div>
       </div>
     </div>
   ) : null
@@ -70,146 +76,106 @@ function App() {
     "🎪 The AI circus is in town!"
   ];
 
-  // Enhanced AdBlock detection with multiple methods
+  // Simple and reliable AdBlock detection
   useEffect(() => {
-    let detectionAttempts = 0;
-    const maxAttempts = 5;
+    let detectionTimeout;
     
-    // Add protection against console manipulation
-    const protectConsole = () => {
-      const originalLog = console.log;
-      const originalWarn = console.warn;
-      const originalError = console.error;
-      
-      console.log = console.warn = console.error = function() {
-        if (arguments[0] && typeof arguments[0] === 'string' && 
-            (arguments[0].includes('adblock') || arguments[0].includes('AdBlock'))) {
+    const detectAdBlock = () => {
+      // Check if user has recently bypassed detection
+      const bypassTime = localStorage.getItem('pixgone-adblock-bypass');
+      if (bypassTime) {
+        const timeSince = Date.now() - parseInt(bypassTime);
+        // Bypass lasts for 24 hours
+        if (timeSince < 24 * 60 * 60 * 1000) {
+          setAdblockDetected(false);
+          setAdblockOpen(false);
+          console.log('AdBlock detection bypassed - skipping');
           return;
         }
-        return originalLog.apply(console, arguments);
-      };
-    };
+      }
 
-    // Prevent right-click and F12 on adblock modal
-    const preventDevTools = (e) => {
-      const target = e.target;
-      const isAdblockElement = target.closest('#adblock-overlay') || target.closest('#adblock-modal');
+      // Only detect if ads are actually supposed to be there
+      const adElements = document.querySelectorAll('.ad-section, .ad-placeholder, [class*="ad-"]');
       
-      if (isAdblockElement) {
-        // Prevent right-click
-        if (e.type === 'contextmenu') {
-          e.preventDefault();
-          e.stopPropagation();
-          return false;
+      if (adElements.length === 0) {
+        // No ads to check, don't block
+        setAdblockDetected(false);
+        setAdblockOpen(false);
+        return;
+      }
+
+      // Create a simple test element
+      const testAd = document.createElement('div');
+      testAd.className = 'ad-test-element';
+      testAd.style.cssText = `
+        position: absolute !important;
+        left: -9999px !important;
+        width: 1px !important;
+        height: 1px !important;
+        background: url('data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7') !important;
+      `;
+      testAd.innerHTML = '<ins class="adsbygoogle" style="display:block;width:1px;height:1px;"></ins>';
+      
+      document.body.appendChild(testAd);
+      
+      // Check after a short delay
+      setTimeout(() => {
+        const isHidden = testAd.offsetHeight === 0 || 
+                       testAd.offsetWidth === 0 ||
+                       window.getComputedStyle(testAd).display === 'none' ||
+                       window.getComputedStyle(testAd).visibility === 'hidden';
+        
+        // Also check for common AdBlock indicators
+        const hasAdBlockSignatures = (
+          typeof window.uBlock !== 'undefined' ||
+          typeof window.AdBlocker !== 'undefined' ||
+          document.querySelector('.adblock-detected') !== null
+        );
+        
+        // Clean up test element
+        if (testAd.parentNode) {
+          testAd.parentNode.removeChild(testAd);
         }
         
-        // Prevent F12, Ctrl+Shift+I, Ctrl+U, etc.
-        if (e.type === 'keydown') {
-          if (e.key === 'F12' || 
-              (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'C' || e.key === 'J')) ||
-              (e.ctrlKey && e.key === 'U')) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-          }
-        }
-      }
-    };
-
-    // Create bait element for AdBlock detection
-    const createBaitElement = () => {
-      const bait = document.createElement('div');
-      bait.className = 'adsbox ad-banner-top advertisement ads';
-      bait.style.position = 'absolute';
-      bait.style.left = '-9999px';
-      bait.style.height = '1px';
-      bait.style.width = '1px';
-      bait.innerHTML = '<img src="http://googleads.g.doubleclick.net/pagead/ads" width="1" height="1">';
-      document.body.appendChild(bait);
-      return bait;
-    };
-
-    // Multiple detection methods
-    const detectAdBlock = () => {
-      detectionAttempts++;
-      let adBlockDetected = false;
-
-      try {
-        // Method 1: Check for AdSense script and visibility
-        const adScript = document.querySelector('script[src*="adsbygoogle.js"]');
-        const adElements = document.querySelectorAll('.adsbygoogle');
-        const adVisible = Array.from(adElements).some(el => el.offsetHeight > 0 && el.offsetWidth > 0);
+        // Only block if we have strong evidence
+        const shouldBlock = (isHidden && hasAdBlockSignatures) || 
+                           (window.location.hostname !== 'localhost' && isHidden);
         
-        // Method 2: Bait element detection
-        const baitElement = createBaitElement();
-        setTimeout(() => {
-          const baitBlocked = baitElement.offsetHeight === 0 || 
-                            window.getComputedStyle(baitElement).display === 'none' ||
-                            window.getComputedStyle(baitElement).visibility === 'hidden';
-          
-          // Method 3: Check for common AdBlock signatures
-          const adBlockSignatures = [
-            () => typeof window.uBlock !== 'undefined',
-            () => typeof window.adblockDetector !== 'undefined',
-            () => document.querySelector('[id*="adblock"]') !== null,
-            () => document.querySelector('[class*="adblock"]') !== null
-          ];
-
-          const signatureDetected = adBlockSignatures.some(check => {
-            try { return check(); } catch { return false; }
-          });
-
-          if (baitElement.parentNode) {
-            baitElement.parentNode.removeChild(baitElement);
-          }
-
-          // Determine if AdBlock is active
-          adBlockDetected = baitBlocked || signatureDetected || (!adScript || !adVisible);
-
-          if (adBlockDetected) {
-            setAdblockDetected(true);
-            setAdblockOpen(true);
-            startContinuousMonitoring();
-            protectConsole();
-            
-            // Add event listeners for dev tools prevention
-            document.addEventListener('contextmenu', preventDevTools, true);
-            document.addEventListener('keydown', preventDevTools, true);
-          } else if (detectionAttempts < maxAttempts) {
-            setTimeout(detectAdBlock, 2000);
-          } else {
-            setAdblockDetected(false);
-            setAdblockOpen(false);
-          }
-        }, 100);
-
-      } catch (error) {
-        console.log('Detection error:', error);
-        if (detectionAttempts < maxAttempts) {
-          setTimeout(detectAdBlock, 2000);
+        if (shouldBlock) {
+          console.log('AdBlock detected - blocking access');
+          setAdblockDetected(true);
+          setAdblockOpen(true);
+        } else {
+          setAdblockDetected(false);
+          setAdblockOpen(false);
         }
-      }
+      }, 200);
     };
 
-    // Start initial detection
-    setTimeout(detectAdBlock, 1500);
+    // Only run detection in production or when ads are present
+    if (process.env.NODE_ENV === 'production' || window.location.hostname !== 'localhost') {
+      detectionTimeout = setTimeout(detectAdBlock, 2000);
+    } else {
+      // In development, don't block
+      setAdblockDetected(false);
+      setAdblockOpen(false);
+    }
 
     return () => {
+      if (detectionTimeout) {
+        clearTimeout(detectionTimeout);
+      }
       if (detectionInterval.current) {
         clearInterval(detectionInterval.current);
       }
       if (mutationObserver.current) {
         mutationObserver.current.disconnect();
       }
-      // Clean up event listeners
-      document.removeEventListener('contextmenu', preventDevTools, true);
-      document.removeEventListener('keydown', preventDevTools, true);
     };
   }, []);
 
-  // Continuous monitoring to prevent bypass attempts
+  // Simplified monitoring - only if actually blocked
   const startContinuousMonitoring = () => {
-    // Periodic re-detection
     detectionInterval.current = setInterval(() => {
       const overlay = document.getElementById('adblock-overlay');
       const modal = document.getElementById('adblock-modal');
@@ -218,42 +184,7 @@ function App() {
         setAdblockOpen(true);
         setAdblockDetected(true);
       }
-    }, 1000);
-
-    // DOM mutation observer to detect removal attempts
-    if ('MutationObserver' in window) {
-      mutationObserver.current = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-          if (mutation.type === 'childList') {
-            const overlay = document.getElementById('adblock-overlay');
-            if (!overlay && adblockDetected) {
-              setTimeout(() => {
-                setAdblockOpen(true);
-              }, 100);
-            }
-          }
-          
-          if (mutation.type === 'attributes') {
-            const target = mutation.target;
-            if (target.id === 'adblock-overlay' || target.id === 'adblock-modal') {
-              if (target.style.display === 'none' || target.style.visibility === 'hidden') {
-                setTimeout(() => {
-                  target.style.display = '';
-                  target.style.visibility = '';
-                }, 50);
-              }
-            }
-          }
-        });
-      });
-
-      mutationObserver.current.observe(document.body, {
-        childList: true,
-        subtree: true,
-        attributes: true,
-        attributeFilter: ['style', 'class']
-      });
-    }
+    }, 5000); // Check less frequently
   };
 
   // Progress stuck message
@@ -316,13 +247,6 @@ function App() {
   };
 
   const handleFileSelect = async (event) => {
-    // Block file selection if AdBlock is detected
-    if (adblockDetected) {
-      event.target.value = '';
-      setError('Please disable your ad blocker to use this service.');
-      return;
-    }
-
     const file = event.target.files[0];
     if (file) {
       setSelectedFile(file);
@@ -333,12 +257,6 @@ function App() {
   const handleDrop = async (event) => {
     event.preventDefault();
     
-    // Block file drop if AdBlock is detected
-    if (adblockDetected) {
-      setError('Please disable your ad blocker to use this service.');
-      return;
-    }
-
     const file = event.dataTransfer.files[0];
     if (file) {
       setSelectedFile(file);
@@ -351,12 +269,6 @@ function App() {
   };
 
   const processImage = async (file) => {
-    // Block processing if AdBlock is detected
-    if (adblockDetected) {
-      setError('Please disable your ad blocker to use this service.');
-      return;
-    }
-
     if (!file.type.startsWith('image/')) {
       alert('Please select an image file.');
       return;
@@ -444,9 +356,17 @@ function App() {
     }
   };
 
+  // Bypass function for false positives
+  const bypassAdblockDetection = () => {
+    setAdblockDetected(false);
+    setAdblockOpen(false);
+    localStorage.setItem('pixgone-adblock-bypass', Date.now().toString());
+    console.log('AdBlock detection bypassed by user');
+  };
+
   return (
     <div className="App">
-      <AdblockModal open={adblockOpen} />
+      <AdblockModal open={adblockOpen} onBypass={bypassAdblockDetection} />
       <Header />
 
       <main className="main-content">
@@ -472,17 +392,15 @@ function App() {
               <div className="main-workspace">
                 {!isProcessing && !processedImage ? (
                   /* Upload Area */
-                  <div className={`upload-workspace${adblockOpen ? ' blocked' : ''}`} 
-                       onDrop={adblockOpen ? undefined : handleDrop} 
-                       onDragOver={adblockOpen ? undefined : handleDragOver} 
-                       style={adblockOpen ? { pointerEvents: 'none', opacity: 0.5, filter: 'grayscale(0.7)' } : {}}>
+                  <div className="upload-workspace" 
+                       onDrop={handleDrop} 
+                       onDragOver={handleDragOver}>
                     <input
                       ref={fileInputRef}
                       type="file"
                       accept="image/*"
-                      onChange={adblockOpen ? undefined : handleFileSelect}
+                      onChange={handleFileSelect}
                       className="file-input"
-                      disabled={adblockOpen}
                     />
                     <div className="upload-content">
                       <div className="upload-icon">
@@ -592,7 +510,7 @@ function App() {
                     </div>
 
                     <div className="action-buttons-modern">
-                      <button className="btn-primary" onClick={downloadImage} disabled={adblockOpen}>
+                      <button className="btn-primary" onClick={downloadImage}>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-15"/>
                           <polyline points="7,10 12,15 17,10"/>
@@ -600,7 +518,7 @@ function App() {
                         </svg>
                         Download Image
                       </button>
-                      <button className="btn-secondary" onClick={resetApp} disabled={adblockOpen}>
+                      <button className="btn-secondary" onClick={resetApp}>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <polyline points="1,4 1,10 7,10"/>
                           <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>

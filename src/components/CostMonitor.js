@@ -11,6 +11,7 @@ const CostMonitor = ({ compact = false }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [debugInfo, setDebugInfo] = useState(null);
 
   const fetchCosts = async () => {
     try {
@@ -19,6 +20,7 @@ const CostMonitor = ({ compact = false }) => {
       if (data && data.costs) {
         setCosts(data.costs);
         setLastUpdated(new Date());
+        setDebugInfo(data.debug || null);
         setError(null);
       } else {
         setError('Failed to fetch costs');
@@ -81,6 +83,13 @@ const CostMonitor = ({ compact = false }) => {
       {error ? (
         <div className="cost-error">
           <span>{error}</span>
+        </div>
+      ) : debugInfo && !debugInfo.railway_api_configured ? (
+        <div className="cost-setup-message">
+          <div className="setup-icon">🔧</div>
+          <h5>Cost Monitoring Setup Required</h5>
+          <p>Railway API credentials not configured. Server costs will show as $0.00 until setup is complete.</p>
+          <small>See deployment logs for setup instructions.</small>
         </div>
       ) : (
         <div className="cost-breakdown">

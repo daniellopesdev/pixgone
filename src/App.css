@@ -850,6 +850,34 @@
   font-style: italic !important;
 }
 
+.adblock-actions {
+  margin-top: 1.5rem !important;
+  text-align: center !important;
+}
+
+.bypass-btn {
+  background: #6c757d !important;
+  color: white !important;
+  border: none !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  font-size: 0.875rem !important;
+  margin-bottom: 0.5rem !important;
+  transition: background 0.2s ease !important;
+}
+
+.bypass-btn:hover {
+  background: #5a6268 !important;
+}
+
+.adblock-actions small {
+  display: block !important;
+  margin-top: 0.5rem !important;
+  font-size: 0.75rem !important;
+  color: #868e96 !important;
+}
+
 @keyframes fadein {
   from { opacity: 0; transform: scale(0.9); }
   to { opacity: 1; transform: scale(1); }
