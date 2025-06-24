@@ -1,7 +1,5 @@
 # 🎨 Pixgone - AI-Powered Background Removal
 
-[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-Visit_Now-blue?style=for-the-badge)](https://your-frontend-url.railway.app)
-[![Support Project](https://img.shields.io/badge/☕_Support_Project-Ko--fi-orange?style=for-the-badge)](https://ko-fi.com/daniellopesdev)
 [![GitHub Stars](https://img.shields.io/github/stars/daniellopesdev/pixgone?style=for-the-badge&logo=github)](https://github.com/daniellopesdev/pixgone/stargazers)
 
 > **🚀 Professional-grade AI background removal using ORMBG. Free, fast, and transparent. No signups, no watermarks, just results.**
@@ -34,9 +32,7 @@ Powered by **ORMBG** (Omni-Relational Multi-scale Background Generation) - a sta
 - 🎨 **Live Preview** - Real-time background color picker
 - 📱 **Mobile Responsive** - Works perfectly on all devices
 - 🔒 **Privacy First** - Images processed securely, never stored
-- 🎬 **Video Support** - Background removal for video files (MP4, WebM)
 - 📊 **Cost Transparency** - Real-time server cost monitoring
-- 🚫 **AdBlock Detection** - Smart monetization with user experience focus
 
 ### 🎨 **User Experience**
 - **Drag & Drop Upload** - Intuitive file handling
