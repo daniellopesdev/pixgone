@@ -8,4 +8,5 @@ torchvision==0.16.0
 numpy==1.24.3
 slowapi==0.1.9
 redis==5.0.1
-huggingface_hub==0.19.4 
+huggingface_hub==0.19.4
+requests==2.31.0 

@@ -18,8 +18,10 @@ import asyncio
 from datetime import datetime, timedelta
 import torch
 from ormbg import ORMBGProcessor 
-from typing import Dict
+from typing import Dict, Optional
 from contextlib import contextmanager
+import requests
+import json
 
 from carvekit.ml.files.models_loc import download_all
 
@@ -74,6 +76,18 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Railway GraphQL API configuration
+RAILWAY_API_URL = "https://backboard.railway.app/graphql/v2"
+RAILWAY_API_TOKEN = os.getenv("RAILWAY_API_TOKEN")
+RAILWAY_PROJECT_ID = os.getenv("RAILWAY_PROJECT_ID")
+
+# Railway pricing (per Railway docs)
+RAILWAY_PRICING = {
+    "CPU_USAGE": 20.0,  # $20 per vCPU per month
+    "MEMORY_USAGE_GB": 10.0,  # $10 per GB per month  
+    "NETWORK_TX_GB": 0.05,  # $0.05 per GB
+}
 
 async def cleanup_old_videos():
     while True:
@@ -471,7 +485,126 @@ async def get_status(video_id: str):
 async def startup_event():
     asyncio.create_task(cleanup_old_videos())
     
+async def fetch_railway_usage() -> Optional[dict]:
+    """Fetch current Railway project usage via GraphQL API"""
+    if not RAILWAY_API_TOKEN or not RAILWAY_PROJECT_ID:
+        logger.warning("Railway API token or project ID not configured")
+        return None
+    
+    # Query for current month usage
+    now = datetime.utcnow()
+    start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    
+    query = """
+    query GetUsage($projectId: String!, $startDate: DateTime!, $endDate: DateTime!) {
+        usage(
+            projectId: $projectId
+            startDate: $startDate
+            endDate: $endDate
+            measurements: [CPU_USAGE, MEMORY_USAGE_GB, NETWORK_TX_GB]
+        ) {
+            measurement
+            value
+        }
+    }
+    """
+    
+    variables = {
+        "projectId": RAILWAY_PROJECT_ID,
+        "startDate": start_of_month.isoformat() + "Z",
+        "endDate": now.isoformat() + "Z"
+    }
+    
+    headers = {
+        "Authorization": f"Bearer {RAILWAY_API_TOKEN}",
+        "Content-Type": "application/json"
+    }
+    
+    try:
+        response = requests.post(
+            RAILWAY_API_URL,
+            json={"query": query, "variables": variables},
+            headers=headers,
+            timeout=10
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            if "data" in data and "usage" in data["data"]:
+                return data["data"]["usage"]
+            else:
+                logger.error(f"Unexpected Railway API response: {data}")
+                return None
+        else:
+            logger.error(f"Railway API request failed: {response.status_code} - {response.text}")
+            return None
+            
+    except Exception as e:
+        logger.error(f"Error fetching Railway usage: {e}")
+        return None
 
+def calculate_costs(usage_data: list) -> dict:
+    """Calculate costs from Railway usage data"""
+    costs = {
+        "cpu_cost": 0.0,
+        "memory_cost": 0.0,
+        "network_cost": 0.0,
+        "total_cost": 0.0
+    }
+    
+    for item in usage_data:
+        measurement = item.get("measurement")
+        value = float(item.get("value", 0))
+        
+        if measurement == "CPU_USAGE":
+            # Convert vCPU-minutes to monthly cost estimate
+            costs["cpu_cost"] = (value / (30 * 24 * 60)) * RAILWAY_PRICING["CPU_USAGE"]
+        elif measurement == "MEMORY_USAGE_GB":
+            # Convert GB-minutes to monthly cost estimate  
+            costs["memory_cost"] = (value / (30 * 24 * 60)) * RAILWAY_PRICING["MEMORY_USAGE_GB"]
+        elif measurement == "NETWORK_TX_GB":
+            costs["network_cost"] = value * RAILWAY_PRICING["NETWORK_TX_GB"]
+    
+    costs["total_cost"] = costs["cpu_cost"] + costs["memory_cost"] + costs["network_cost"]
+    return costs
+
+@app.get("/railway-costs")
+async def get_railway_costs():
+    """Get current Railway project costs"""
+    try:
+        usage_data = await fetch_railway_usage()
+        
+        if not usage_data:
+            return {
+                "error": "Unable to fetch Railway usage data",
+                "costs": {
+                    "cpu_cost": 0.0,
+                    "memory_cost": 0.0,
+                    "network_cost": 0.0,
+                    "total_cost": 0.0
+                }
+            }
+        
+        costs = calculate_costs(usage_data)
+        
+        return {
+            "success": True,
+            "costs": costs,
+            "last_updated": datetime.utcnow().isoformat() + "Z",
+            "currency": "USD"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error in railway-costs endpoint: {e}")
+        return {
+            "error": "Internal server error",
+            "costs": {
+                "cpu_cost": 0.0,
+                "memory_cost": 0.0,
+                "network_cost": 0.0,
+                "total_cost": 0.0
+            }
+        }
 
 if __name__ == "__main__":
     import uvicorn

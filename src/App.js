@@ -3,20 +3,20 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import ColorPicker from './components/ColorPicker';
 import AdBanner from './components/AdBanner';
+import CostMonitor from './components/CostMonitor';
 import './App.css';
 
-const AdblockModal = ({ open, onClose }) => (
+const AdblockModal = ({ open }) => (
   open ? (
-    <div className="adblock-modal-overlay">
-      <div className="adblock-modal">
+    <div className="adblock-modal-overlay" id="adblock-overlay">
+      <div className="adblock-modal" id="adblock-modal">
         <div className="adblock-emoji">🦄🚫</div>
         <h2>AdBlock Detected!</h2>
         <p>
           Hey! Please disable your ad blocker to use <b>pixGone</b>.<br />
-          We only show a few ads to keep it free.
-       
+          We only show a few ads to keep it free.<br />
+          <small>Refresh the page after disabling AdBlock.</small>
         </p>
-        <button className="modal-btn" onClick={onClose}>Okay, I'll disable it!</button>
       </div>
     </div>
   ) : null
@@ -31,12 +31,15 @@ function App() {
   const [backgroundColor, setBackgroundColor] = useState('#ffffff');
   const [showStuckMsg, setShowStuckMsg] = useState(false);
   const [adblockOpen, setAdblockOpen] = useState(false);
+  const [adblockDetected, setAdblockDetected] = useState(false);
   const [rateLimitInfo, setRateLimitInfo] = useState(null);
   const [rateLimitError, setRateLimitError] = useState(null);
   const [currentMessage, setCurrentMessage] = useState('');
   const fileInputRef = useRef(null);
   const progressInterval = useRef(null);
   const stuckTimeout = useRef(null);
+  const detectionInterval = useRef(null);
+  const mutationObserver = useRef(null);
 
   // Funny waiting messages
   const waitingMessages = [
@@ -67,28 +70,191 @@ function App() {
     "🎪 The AI circus is in town!"
   ];
 
-  // AdBlock detection (improved)
+  // Enhanced AdBlock detection with multiple methods
   useEffect(() => {
-    let attempts = 0;
-    let detected = false;
-    function checkAdBlock() {
-      const adScript = document.querySelector('script[src*="adsbygoogle.js"]');
-      const adElements = document.querySelectorAll('.adsbygoogle');
-      const adVisible = Array.from(adElements).some(el => el.offsetHeight > 0);
-      if (adScript && adVisible) {
-        detected = false;
-        setAdblockOpen(false);
-      } else if (attempts < 3) {
-        attempts++;
-        setTimeout(checkAdBlock, 1500);
-      } else {
-        detected = true;
-        setAdblockOpen(true);
+    let detectionAttempts = 0;
+    const maxAttempts = 5;
+    
+    // Add protection against console manipulation
+    const protectConsole = () => {
+      const originalLog = console.log;
+      const originalWarn = console.warn;
+      const originalError = console.error;
+      
+      console.log = console.warn = console.error = function() {
+        if (arguments[0] && typeof arguments[0] === 'string' && 
+            (arguments[0].includes('adblock') || arguments[0].includes('AdBlock'))) {
+          return;
+        }
+        return originalLog.apply(console, arguments);
+      };
+    };
+
+    // Prevent right-click and F12 on adblock modal
+    const preventDevTools = (e) => {
+      const target = e.target;
+      const isAdblockElement = target.closest('#adblock-overlay') || target.closest('#adblock-modal');
+      
+      if (isAdblockElement) {
+        // Prevent right-click
+        if (e.type === 'contextmenu') {
+          e.preventDefault();
+          e.stopPropagation();
+          return false;
+        }
+        
+        // Prevent F12, Ctrl+Shift+I, Ctrl+U, etc.
+        if (e.type === 'keydown') {
+          if (e.key === 'F12' || 
+              (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'C' || e.key === 'J')) ||
+              (e.ctrlKey && e.key === 'U')) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+          }
+        }
       }
-    }
-    setTimeout(checkAdBlock, 1500);
-    return () => { detected = true; };
+    };
+
+    // Create bait element for AdBlock detection
+    const createBaitElement = () => {
+      const bait = document.createElement('div');
+      bait.className = 'adsbox ad-banner-top advertisement ads';
+      bait.style.position = 'absolute';
+      bait.style.left = '-9999px';
+      bait.style.height = '1px';
+      bait.style.width = '1px';
+      bait.innerHTML = '<img src="http://googleads.g.doubleclick.net/pagead/ads" width="1" height="1">';
+      document.body.appendChild(bait);
+      return bait;
+    };
+
+    // Multiple detection methods
+    const detectAdBlock = () => {
+      detectionAttempts++;
+      let adBlockDetected = false;
+
+      try {
+        // Method 1: Check for AdSense script and visibility
+        const adScript = document.querySelector('script[src*="adsbygoogle.js"]');
+        const adElements = document.querySelectorAll('.adsbygoogle');
+        const adVisible = Array.from(adElements).some(el => el.offsetHeight > 0 && el.offsetWidth > 0);
+        
+        // Method 2: Bait element detection
+        const baitElement = createBaitElement();
+        setTimeout(() => {
+          const baitBlocked = baitElement.offsetHeight === 0 || 
+                            window.getComputedStyle(baitElement).display === 'none' ||
+                            window.getComputedStyle(baitElement).visibility === 'hidden';
+          
+          // Method 3: Check for common AdBlock signatures
+          const adBlockSignatures = [
+            () => typeof window.uBlock !== 'undefined',
+            () => typeof window.adblockDetector !== 'undefined',
+            () => document.querySelector('[id*="adblock"]') !== null,
+            () => document.querySelector('[class*="adblock"]') !== null
+          ];
+
+          const signatureDetected = adBlockSignatures.some(check => {
+            try { return check(); } catch { return false; }
+          });
+
+          if (baitElement.parentNode) {
+            baitElement.parentNode.removeChild(baitElement);
+          }
+
+          // Determine if AdBlock is active
+          adBlockDetected = baitBlocked || signatureDetected || (!adScript || !adVisible);
+
+          if (adBlockDetected) {
+            setAdblockDetected(true);
+            setAdblockOpen(true);
+            startContinuousMonitoring();
+            protectConsole();
+            
+            // Add event listeners for dev tools prevention
+            document.addEventListener('contextmenu', preventDevTools, true);
+            document.addEventListener('keydown', preventDevTools, true);
+          } else if (detectionAttempts < maxAttempts) {
+            setTimeout(detectAdBlock, 2000);
+          } else {
+            setAdblockDetected(false);
+            setAdblockOpen(false);
+          }
+        }, 100);
+
+      } catch (error) {
+        console.log('Detection error:', error);
+        if (detectionAttempts < maxAttempts) {
+          setTimeout(detectAdBlock, 2000);
+        }
+      }
+    };
+
+    // Start initial detection
+    setTimeout(detectAdBlock, 1500);
+
+    return () => {
+      if (detectionInterval.current) {
+        clearInterval(detectionInterval.current);
+      }
+      if (mutationObserver.current) {
+        mutationObserver.current.disconnect();
+      }
+      // Clean up event listeners
+      document.removeEventListener('contextmenu', preventDevTools, true);
+      document.removeEventListener('keydown', preventDevTools, true);
+    };
   }, []);
+
+  // Continuous monitoring to prevent bypass attempts
+  const startContinuousMonitoring = () => {
+    // Periodic re-detection
+    detectionInterval.current = setInterval(() => {
+      const overlay = document.getElementById('adblock-overlay');
+      const modal = document.getElementById('adblock-modal');
+      
+      if (!overlay || !modal || overlay.style.display === 'none' || modal.style.display === 'none') {
+        setAdblockOpen(true);
+        setAdblockDetected(true);
+      }
+    }, 1000);
+
+    // DOM mutation observer to detect removal attempts
+    if ('MutationObserver' in window) {
+      mutationObserver.current = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type === 'childList') {
+            const overlay = document.getElementById('adblock-overlay');
+            if (!overlay && adblockDetected) {
+              setTimeout(() => {
+                setAdblockOpen(true);
+              }, 100);
+            }
+          }
+          
+          if (mutation.type === 'attributes') {
+            const target = mutation.target;
+            if (target.id === 'adblock-overlay' || target.id === 'adblock-modal') {
+              if (target.style.display === 'none' || target.style.visibility === 'hidden') {
+                setTimeout(() => {
+                  target.style.display = '';
+                  target.style.visibility = '';
+                }, 50);
+              }
+            }
+          }
+        });
+      });
+
+      mutationObserver.current.observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['style', 'class']
+      });
+    }
+  };
 
   // Progress stuck message
   useEffect(() => {
@@ -120,7 +286,7 @@ function App() {
           const nextIndex = (currentIndex + 1) % waitingMessages.length;
           return waitingMessages[nextIndex];
         });
-      }, 2000); // Change message every 2 seconds
+      }, 1500); // Faster rotation - change message every 1.5 seconds
     } else {
       setCurrentMessage('');
     }
@@ -150,6 +316,13 @@ function App() {
   };
 
   const handleFileSelect = async (event) => {
+    // Block file selection if AdBlock is detected
+    if (adblockDetected) {
+      event.target.value = '';
+      setError('Please disable your ad blocker to use this service.');
+      return;
+    }
+
     const file = event.target.files[0];
     if (file) {
       setSelectedFile(file);
@@ -159,6 +332,13 @@ function App() {
 
   const handleDrop = async (event) => {
     event.preventDefault();
+    
+    // Block file drop if AdBlock is detected
+    if (adblockDetected) {
+      setError('Please disable your ad blocker to use this service.');
+      return;
+    }
+
     const file = event.dataTransfer.files[0];
     if (file) {
       setSelectedFile(file);
@@ -171,6 +351,12 @@ function App() {
   };
 
   const processImage = async (file) => {
+    // Block processing if AdBlock is detected
+    if (adblockDetected) {
+      setError('Please disable your ad blocker to use this service.');
+      return;
+    }
+
     if (!file.type.startsWith('image/')) {
       alert('Please select an image file.');
       return;
@@ -187,13 +373,15 @@ function App() {
     setRateLimitError(null);
     setProcessedImage(null);
 
-    // Simulate progress
+    // Enhanced progress simulation
     progressInterval.current = setInterval(() => {
       setProgress((prev) => {
-        if (prev < 90) return prev + 2;
-        return prev;
+        if (prev < 70) return prev + 3; // Faster initial progress
+        if (prev < 85) return prev + 1; // Slower middle phase
+        if (prev < 95) return prev + 0.5; // Very slow final phase
+        return prev; // Stop at 95% until completion
       });
-    }, 100);
+    }, 150);
 
     const formData = new FormData();
     formData.append('file', file);
@@ -258,7 +446,7 @@ function App() {
 
   return (
     <div className="App">
-      <AdblockModal open={adblockOpen} onClose={() => setAdblockOpen(false)} />
+      <AdblockModal open={adblockOpen} />
       <Header />
 
       <main className="main-content">
@@ -284,6 +472,19 @@ function App() {
             </div>
           )}
 
+          {/* Cost Transparency Section */}
+          <div className="transparency-section">
+            <CostMonitor />
+            <div className="transparency-note">
+              <h3>🔒 Transparent Pricing</h3>
+              <p>
+                We believe in full transparency. These are our real server costs for running this AI service.
+                Your usage helps cover these expenses and keeps the service free for everyone.
+              </p>
+              <small>Costs are updated every 5 minutes via Railway's API</small>
+            </div>
+          </div>
+
           <div className="upload-section">
             <div className={`upload-area${adblockOpen ? ' blocked' : ''}`} onDrop={adblockOpen ? undefined : handleDrop} onDragOver={adblockOpen ? undefined : handleDragOver} style={adblockOpen ? { pointerEvents: 'none', opacity: 0.5, filter: 'grayscale(0.7)' } : {}}>
               <input
@@ -306,12 +507,12 @@ function App() {
                 <p>{error}</p>
                 {rateLimitError && rateLimitError.code === 'DAILY_LIMIT_EXCEEDED' && (
                   <p className="rate-limit-help">
-                    💡 Try again tomorrow or consider upgrading for more requests.
+                    💡 Try again tomorrow.
                   </p>
                 )}
                 {rateLimitError && rateLimitError.code === 'IP_BLOCKED' && (
                   <p className="rate-limit-help">
-                    💡 Your IP has been blocked due to excessive usage. Please contact support.
+                    💡 Your IP has been blocked due to excessive usage. Try again tomorrow.
                   </p>
                 )}
               </div>
@@ -319,12 +520,35 @@ function App() {
 
             {isProcessing && (
               <div className="processing-section">
-                <div className="progress-bar">
-                  <div className="progress-fill" style={{ width: `${progress}%` }}></div>
+                <div className="processing-header">
+                  <div className="loading-spinner"></div>
+                  <h3>Processing Your Image...</h3>
                 </div>
-                <p className="processing-text">
-                  {showStuckMsg ? "Still processing..." : currentMessage}
-                </p>
+                
+                <div className="progress-container">
+                  <div className="progress-bar">
+                    <div className="progress-fill" style={{ width: `${progress}%` }}></div>
+                    <div className="progress-text">{progress}%</div>
+                  </div>
+                </div>
+
+                <div className="waiting-message-container">
+                  <p className="processing-text animated-text">
+                    {currentMessage}
+                  </p>
+                  {showStuckMsg && (
+                    <div className="stuck-message">
+                      <div className="stuck-spinner"></div>
+                      <p>Almost there! The AI is putting the finishing touches...</p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="processing-status">
+                  {progress < 30 && <span className="status-badge uploading">📤 Uploading...</span>}
+                  {progress >= 30 && progress < 90 && <span className="status-badge processing">🧠 AI Processing...</span>}
+                  {progress >= 90 && <span className="status-badge finalizing">✨ Finalizing...</span>}
+                </div>
               </div>
             )}
           </div>
