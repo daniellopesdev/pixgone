@@ -4,7 +4,7 @@
 [![Support Project](https://img.shields.io/badge/☕_Support_Project-Ko--fi-orange?style=for-the-badge)](https://ko-fi.com/daniellopesdev)
 [![GitHub Stars](https://img.shields.io/github/stars/daniellopesdev/pixgone?style=for-the-badge&logo=github)](https://github.com/daniellopesdev/pixgone/stargazers)
 
-> **🚀 Professional-grade AI background removal. Free, fast, and transparent. No signups, no watermarks, just results.**
+> **🚀 Professional-grade AI background removal using ORMBG. Free, fast, and transparent. No signups, no watermarks, just results.**
 
 ![Pixgone Banner](public/logoPix.png)
 
@@ -21,15 +21,12 @@ Unlike expensive subscription services, Pixgone is **completely free** and **ope
 
 ## ✨ Features Overview
 
-### 🤖 **Multiple AI Models**
-Choose from 7 cutting-edge background removal models:
-- **BRIA RMBG-1.4** - Latest commercial-grade model
-- **ORMBG** - Optimized for portraits and people
-- **InSPyReNet** - High-quality general purpose
-- **RemBG U2Net** - Classic reliable model
-- **RemBG Human Seg** - Specialized for human subjects
-- **RemBG ISNet** - Enhanced accuracy model
-- **Carvekit Models** - U2Net, Tracer, BasNet, DeepLab variants
+### 🤖 **ORMBG AI Model**
+Powered by **ORMBG** (Omni-Relational Multi-scale Background Generation) - a state-of-the-art background removal model:
+- **Fast Processing** - Optimized for speed and accuracy
+- **High Quality** - Professional-grade results
+- **Reliable** - Consistent performance across different image types
+- **GPU Accelerated** - Enhanced performance with CUDA support
 
 ### 🚀 **Core Features**
 - ⚡ **Instant Processing** - Server-side AI with GPU acceleration
@@ -71,20 +68,18 @@ PWA Features          // App-like experience
 ```python
 FastAPI              // High-performance async API
 Python 3.8+         // Core backend language
-Multiple AI Models  // 7 different background removal models
+ORMBG Model         // AI background removal
 GPU Optimization    // CUDA support for faster processing
 Redis Rate Limiting // Fair usage enforcement
 Railway Deployment  // Cloud hosting platform
 ```
 
-### **AI Models & Processing**
+### **AI Processing**
 ```python
-# Model Selection Strategy
-BRIA RMBG-1.4    → Commercial-grade accuracy
-ORMBG            → Portrait optimization  
-InSPyReNet       → General purpose quality
-RemBG variants   → Proven reliability
-Carvekit models  → Advanced segmentation
+# ORMBG Model Processing
+ORMBG → Professional background removal
+GPU acceleration for enhanced performance
+Memory-efficient processing
 ```
 
 ### **Infrastructure**
@@ -305,12 +300,12 @@ git push origin feature/amazing-feature
 ## 📚 API Documentation
 
 ### **POST /remove_background/**
-Remove background from an image.
+Remove background from an image using ORMBG.
 
 ```javascript
 const formData = new FormData();
 formData.append('file', imageFile);
-formData.append('method', 'bria'); // Model selection
+formData.append('method', 'ormbg');
 
 fetch('/remove_background/', {
     method: 'POST',
@@ -339,7 +334,7 @@ Process video files for background removal.
 ```javascript
 const formData = new FormData();
 formData.append('file', videoFile);
-formData.append('method', 'bria');
+formData.append('method', 'ormbg');
 
 fetch('/remove_background_video/', {
     method: 'POST',
@@ -381,11 +376,7 @@ fetch('/remove_background_video/', {
 
 | Model | Average Speed | Quality | Best For |
 |-------|---------------|---------|----------|
-| BRIA RMBG-1.4 | 2.3s | ⭐⭐⭐⭐⭐ | Commercial use |
 | ORMBG | 1.8s | ⭐⭐⭐⭐ | Portraits |
-| InSPyReNet | 3.1s | ⭐⭐⭐⭐⭐ | High quality |
-| RemBG U2Net | 1.5s | ⭐⭐⭐ | General use |
-| RemBG Human | 1.7s | ⭐⭐⭐⭐ | People only |
 
 *Benchmarks on Railway Pro plan with GPU acceleration*
 
@@ -433,9 +424,7 @@ If Pixgone has helped you, consider supporting its development:
 ## 🙏 Acknowledgments
 
 - **Railway** - Excellent deployment platform
-- **Hugging Face** - AI model hosting
-- **BRIA AI** - RMBG-1.4 model
-- **RemBG Team** - Original background removal models
+- **ORMBG Team** - Background removal model
 - **React Team** - Amazing frontend framework
 - **FastAPI** - Incredible Python web framework
 
