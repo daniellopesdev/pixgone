@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import DonateButton from './DonateButton';
 import './Header.css';
 
-const Header = () => {
+const Header = ({ onDonateClick }) => {
   const [appStatus, setAppStatus] = useState(null);
 
   useEffect(() => {
@@ -53,6 +53,7 @@ const Header = () => {
               size="small" 
               appStatus={appStatus}
               showWhenDisabled={true}
+              onClick={onDonateClick}
             />
           </div>
         </nav>

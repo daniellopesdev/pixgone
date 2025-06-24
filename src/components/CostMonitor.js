@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './CostMonitor.css';
 
-const CostMonitor = ({ compact = false }) => {
+const CostMonitor = ({ compact = false, onTotalCostChange }) => {
   const [costs, setCosts] = useState({
     cpu_cost: 0.0,
     memory_cost: 0.0,
@@ -22,12 +22,21 @@ const CostMonitor = ({ compact = false }) => {
         setLastUpdated(new Date());
         setDebugInfo(data.debug || null);
         setError(null);
+        if (onTotalCostChange) {
+          onTotalCostChange(data.costs.total_cost || 0);
+        }
       } else {
         setError('Failed to fetch costs');
+        if (onTotalCostChange) {
+          onTotalCostChange(0);
+        }
       }
     } catch (err) {
       setError('Unable to connect to cost monitoring');
       console.error('Cost fetch error:', err);
+      if (onTotalCostChange) {
+        onTotalCostChange(0);
+      }
     } finally {
       setLoading(false);
     }

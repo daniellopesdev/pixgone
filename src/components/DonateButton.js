@@ -6,7 +6,9 @@ const DonateButton = ({
   size = 'medium', 
   showWhenDisabled = true,
   appStatus = null,
-  className = ''
+  className = '',
+  buttonTextOverride = null,
+  onClick = null
 }) => {
   // Don't show button if app is disabled and showWhenDisabled is false
   if (appStatus && !appStatus.enabled && !showWhenDisabled) {
@@ -16,21 +18,21 @@ const DonateButton = ({
   const buttonClass = `donate-button donate-button--${variant} donate-button--${size} ${className}`;
   
   const getButtonText = () => {
+    if (buttonTextOverride) return buttonTextOverride;
     if (appStatus && !appStatus.enabled) {
-      return '☕ Keep It Running';
+      return 'Keep It Running';
     }
-    
     switch (variant) {
       case 'hero':
-        return '☕ Support the Project';
+        return 'Support the Project';
       case 'header':
-        return '☕ Donate';
+        return 'Donate';
       case 'sidebar':
-        return '☕ Buy Coffee';
+        return 'Support';
       case 'urgent':
-        return '🚨 Donate Now';
+        return 'Support Now';
       default:
-        return '☕ Support';
+        return 'Donate';
     }
   };
 
@@ -43,6 +45,20 @@ const DonateButton = ({
     }
     return {};
   };
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        className={buttonClass}
+        style={getButtonStyle()}
+        title={appStatus && !appStatus.enabled ? 'Service is disabled - help keep it running!' : 'Support the project'}
+        onClick={onClick}
+      >
+        {getButtonText()}
+      </button>
+    );
+  }
 
   return (
     <a 

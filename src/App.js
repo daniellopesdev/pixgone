@@ -31,6 +31,32 @@ const AdblockModal = ({ open, onBypass }) => (
   ) : null
 );
 
+function DonateModal({ open, onClose }) {
+  if (!open) return null;
+  return (
+    <div className="preview-modal-overlay" onClick={onClose}>
+      <div className="preview-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 400, width: '90%' }}>
+        <div className="preview-modal-header">
+          <h3>Support the Project</h3>
+          <button className="preview-close-btn" onClick={onClose}>&times;</button>
+        </div>
+        <div style={{ padding: '2rem 1rem', textAlign: 'center' }}>
+          <iframe
+            title="Ko-fi Donate"
+            src="https://ko-fi.com/daniellopesdev/?hidefeed=true&widget=true&embed=true&preview=true"
+            style={{ border: 'none', width: '100%', minHeight: 400, maxWidth: 350 }}
+            frameBorder="0"
+            allowtransparency="true"
+          ></iframe>
+          <div style={{ marginTop: 16, fontSize: 14, color: '#64748b' }}>
+            100% of your donation goes to server costs.
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [processedImage, setProcessedImage] = useState(null);
@@ -46,6 +72,8 @@ function App() {
   const [currentMessage, setCurrentMessage] = useState('');
   const [showTransparencyInfo, setShowTransparencyInfo] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [currentServerCost, setCurrentServerCost] = useState(0);
+  const [donateModalOpen, setDonateModalOpen] = useState(false);
   const fileInputRef = useRef(null);
   const progressInterval = useRef(null);
   const stuckTimeout = useRef(null);
@@ -438,7 +466,7 @@ function App() {
   return (
     <div className="App">
       <AdblockModal open={adblockOpen} onBypass={bypassAdblockDetection} />
-      <Header />
+      <Header onDonateClick={() => setDonateModalOpen(true)} />
 
       <main className="main-content">
         <div className="container">
@@ -451,12 +479,6 @@ function App() {
               {/* Animated Scroll Button */}
               <button className="hero-cta-btn" onClick={scrollToUpload}>
                 <span className="cta-text">Start Removing Backgrounds</span>
-                <div className="cta-arrow">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M7 13l3 3 7-7"/>
-                    <path d="M21 12H3"/>
-                  </svg>
-                </div>
               </button>
             </div>
             
@@ -678,11 +700,11 @@ function App() {
             {/* Right Column - Server Costs & Info */}
             <div className="info-column">
               {/* Community Support & Donation Stats */}
-              <DonationStats />
+              <DonationStats currentCost={currentServerCost} onDonateClick={() => setDonateModalOpen(true)} />
               
               {/* Server Costs - Aligned Right */}
               <div className="server-costs-card">
-                <CostMonitor />
+                <CostMonitor onTotalCostChange={setCurrentServerCost} />
                 
                 {/* Transparency Info Toggler */}
                 <div className="transparency-toggler">
@@ -747,6 +769,7 @@ function App() {
 
       <ImagePreviewModal />
       
+      <DonateModal open={donateModalOpen} onClose={() => setDonateModalOpen(false)} />
       <KofiWidgetEnhanced />
     </div>
   );

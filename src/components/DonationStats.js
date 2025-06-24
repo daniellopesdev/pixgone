@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import DonateButton from './DonateButton';
 import './DonationStats.css';
 
-const DonationStats = () => {
+const DonationStats = ({ currentCost, onDonateClick }) => {
   const [donationStats, setDonationStats] = useState(null);
   const [appStatus, setAppStatus] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -66,7 +66,13 @@ const DonationStats = () => {
   }
 
   const { total_donations, donation_count, top_contributors } = donationStats;
-  const { enabled, current_cost, monthly_donations, available_budget, base_threshold, total_budget } = appStatus;
+  // Use currentCost prop if provided, else fallback to appStatus.current_cost
+  const current_cost = typeof currentCost === 'number' ? currentCost : appStatus.current_cost;
+  const base_threshold = appStatus.base_threshold;
+  const monthly_donations = appStatus.monthly_donations;
+  const total_budget = base_threshold + monthly_donations;
+  const available_budget = total_budget - current_cost;
+  const enabled = appStatus.enabled;
   
   const usagePercentage = total_budget > 0 ? (current_cost / total_budget) * 100 : 0;
   const progressColor = usagePercentage > 80 ? '#ef4444' : usagePercentage > 60 ? '#f59e0b' : '#10b981';
@@ -129,6 +135,7 @@ const DonationStats = () => {
             size="medium" 
             appStatus={appStatus}
             showWhenDisabled={true}
+            onClick={onDonateClick}
           />
         </div>
       )}
@@ -154,6 +161,8 @@ const DonationStats = () => {
           size="medium" 
           appStatus={appStatus}
           showWhenDisabled={true}
+          buttonTextOverride="Support"
+          onClick={onDonateClick}
         />
       </div>
     </div>

@@ -116,12 +116,6 @@
   z-index: 1;
 }
 
-.cta-arrow {
-  position: relative;
-  z-index: 1;
-  animation: arrowBounce 2s ease-in-out infinite;
-}
-
 /* Pixel Grid Animation - Full Hero Coverage */
 .pixel-grid-animation {
   position: absolute;
@@ -344,7 +338,7 @@
 .main-workspace {
   min-height: 600px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
 }
 
@@ -1501,15 +1495,6 @@
   }
   50% {
     transform: translateY(-8px);
-  }
-}
-
-@keyframes arrowBounce {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-3px);
   }
 }
 

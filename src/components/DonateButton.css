@@ -43,40 +43,63 @@
 
 /* Style variants */
 .donate-button--default {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: rgb(0, 0, 255);
   color: white;
+  border: 2px solid rgb(0, 0, 255);
+}
+
+.donate-button--default:hover {
+  background: rgb(0, 0, 200);
+  border-color: rgb(0, 0, 200);
 }
 
 .donate-button--hero {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+  background: rgb(0, 0, 255);
   color: white;
-  font-size: 18px;
-  padding: 16px 32px;
-  border-radius: 50px;
-  box-shadow: 0 8px 32px rgba(255, 107, 107, 0.3);
+  border: 2px solid rgb(0, 0, 255);
+  box-shadow: 0 4px 20px rgba(0, 0, 255, 0.3);
+}
+
+.donate-button--hero:hover {
+  background: rgb(0, 0, 200);
+  border-color: rgb(0, 0, 200);
+  box-shadow: 0 6px 25px rgba(0, 0, 255, 0.4);
 }
 
 .donate-button--header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: rgb(0, 0, 255);
   color: white;
-  border-radius: 6px;
-  font-size: 14px;
-  padding: 8px 16px;
+  border: 2px solid rgb(0, 0, 255);
+}
+
+.donate-button--header:hover {
+  background: rgb(0, 0, 200);
+  border-color: rgb(0, 0, 200);
 }
 
 .donate-button--sidebar {
-  background: linear-gradient(135deg, #ff9a56 0%, #ff6b6b 100%);
+  background: rgb(0, 0, 255);
   color: white;
-  border-radius: 8px;
+  border: 2px solid rgb(0, 0, 255);
   width: 100%;
-  margin: 8px 0;
+}
+
+.donate-button--sidebar:hover {
+  background: rgb(0, 0, 200);
+  border-color: rgb(0, 0, 200);
 }
 
 .donate-button--urgent {
-  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  background: rgb(0, 0, 255);
   color: white;
-  border-radius: 8px;
+  border: 2px solid rgb(0, 0, 255);
   animation: pulse 2s infinite;
+}
+
+.donate-button--urgent:hover {
+  background: rgb(0, 0, 200);
+  border-color: rgb(0, 0, 200);
+  animation: none;
 }
 
 /* Pulse animation for urgent state */
