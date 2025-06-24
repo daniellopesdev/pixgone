@@ -22,6 +22,8 @@ from typing import Dict, Optional
 from contextlib import contextmanager
 import requests
 import json
+import threading
+from collections import defaultdict
 
 from carvekit.ml.files.models_loc import download_all
 
@@ -88,6 +90,66 @@ RAILWAY_PRICING = {
     "MEMORY_USAGE_GB": 10.0,  # $10 per GB per month  
     "NETWORK_TX_GB": 0.05,  # $0.05 per GB
 }
+
+# Rate limiting configuration
+DAILY_LIMIT = int(os.environ.get("DAILY_LIMIT", "50"))  # Requests per day per IP
+RATE_LIMIT = "10/minute"  # Requests per minute per IP
+ABUSE_THRESHOLD = int(os.environ.get("ABUSE_THRESHOLD", "100"))  # Max requests per day before blocking
+
+# In-memory storage for daily request tracking (use Redis in production)
+daily_requests = defaultdict(int)
+blocked_ips = set()
+storage_lock = threading.Lock()
+
+def get_client_ip(request: Request) -> str:
+    """Get the real client IP address, considering proxies"""
+    x_forwarded_for = request.headers.get("X-Forwarded-For")
+    if x_forwarded_for:
+        return x_forwarded_for.split(",")[0].strip()
+    return request.client.host
+
+def is_ip_blocked(ip: str) -> bool:
+    """Check if an IP is blocked"""
+    with storage_lock:
+        return ip in blocked_ips
+
+def track_daily_request(ip: str) -> bool:
+    """Track daily requests and check limits. Returns True if limit exceeded."""
+    today = datetime.now().strftime("%Y-%m-%d")
+    key = f"{ip}:{today}"
+    
+    with storage_lock:
+        daily_requests[key] += 1
+        
+        # Check for abuse (automatic blocking)
+        if daily_requests[key] > ABUSE_THRESHOLD:
+            blocked_ips.add(ip)
+            print(f"🚫 IP {ip} blocked for abuse: {daily_requests[key]} requests today")
+            return True
+        
+        # Check daily limit
+        if daily_requests[key] > DAILY_LIMIT:
+            print(f"⚠️ IP {ip} exceeded daily limit: {daily_requests[key]}/{DAILY_LIMIT}")
+            return True
+        
+        print(f"📊 IP {ip} requests today: {daily_requests[key]}/{DAILY_LIMIT}")
+        return False
+
+def cleanup_old_requests():
+    """Clean up old request tracking data"""
+    with storage_lock:
+        yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+        keys_to_delete = []
+        
+        for key in daily_requests.keys():
+            if key.endswith(f":{yesterday}") or len(key.split(":")) != 2:
+                keys_to_delete.append(key)
+        
+        for key in keys_to_delete:
+            del daily_requests[key]
+        
+        if keys_to_delete:
+            print(f"🧹 Cleaned up {len(keys_to_delete)} old request tracking entries")
 
 async def cleanup_old_videos():
     while True:
@@ -223,10 +285,55 @@ def carvekit_video_model_context(model_name):
 gpu_lock = asyncio.Lock()
 
 @app.post("/remove_background/")
-async def remove_background(file: UploadFile = File(...), method: str = Form(...)):
+async def remove_background(request: Request, file: UploadFile = File(...), method: str = Form(...)):
+    # Get client IP and check for abuse
+    client_ip = get_client_ip(request)
+    
+    # Check if IP is blocked
+    if is_ip_blocked(client_ip):
+        raise HTTPException(
+            status_code=429, 
+            detail={
+                "error": "IP blocked for abuse",
+                "message": "Your IP has been blocked due to excessive usage. Please try again tomorrow or contact support.",
+                "code": "IP_BLOCKED"
+            }
+        )
+    
+    # Track daily request
+    if track_daily_request(client_ip):
+        raise HTTPException(
+            status_code=429,
+            detail={
+                "error": "Daily limit exceeded",
+                "message": f"You have exceeded the daily limit of {DAILY_LIMIT} requests. Please try again tomorrow.",
+                "limit": DAILY_LIMIT,
+                "code": "DAILY_LIMIT_EXCEEDED"
+            }
+        )
+    
     try:
+        # Validate file
+        if not file.content_type or not file.content_type.startswith('image/'):
+            raise HTTPException(status_code=400, detail="File must be an image")
+        
         image_data = await file.read()
+        if len(image_data) == 0:
+            raise HTTPException(status_code=400, detail="Empty file")
+        
+        # Check file size (limit to 10MB)
+        if len(image_data) > 10 * 1024 * 1024:
+            raise HTTPException(
+                status_code=400, 
+                detail={
+                    "error": "File too large",
+                    "message": "Image file size must be less than 10MB",
+                    "max_size_mb": 10
+                }
+            )
+        
         image = Image.open(io.BytesIO(image_data)).convert('RGB')
+        print(f"Processing image: {image.size} for IP: {client_ip}")
         
         start_time = time.time()
 
@@ -270,9 +377,11 @@ async def remove_background(file: UploadFile = File(...), method: str = Form(...
 
         return Response(content=content, media_type="image/png")
 
+    except HTTPException:
+        raise
     except Exception as e:
-        print(str(e))
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"Error processing image: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")
 
 async def process_frame(frame_path, method):
     img = Image.open(frame_path).convert('RGB')
@@ -481,10 +590,69 @@ async def get_status(video_id: str):
     
     return status
 
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for Railway and monitoring"""
+    return {
+        "status": "healthy",
+        "timestamp": datetime.utcnow().isoformat(),
+        "rate_limiting": True,
+        "cost_monitoring": bool(RAILWAY_API_TOKEN and RAILWAY_PROJECT_ID)
+    }
+
+@app.get("/admin/stats")
+async def get_rate_limit_stats(request: Request):
+    """Admin endpoint to view rate limiting statistics"""
+    # Simple admin check (you should implement proper authentication)
+    admin_key = request.headers.get("X-Admin-Key")
+    if admin_key != os.environ.get("ADMIN_KEY", "pixgone-admin-2024"):
+        raise HTTPException(status_code=403, detail="Unauthorized")
+    
+    with storage_lock:
+        today = datetime.now().strftime("%Y-%m-%d")
+        today_stats = {k: v for k, v in daily_requests.items() if k.endswith(f":{today}")}
+        
+        return {
+            "today_requests": len(today_stats),
+            "total_requests_today": sum(today_stats.values()),
+            "blocked_ips_count": len(blocked_ips),
+            "blocked_ips": list(blocked_ips),
+            "top_ips_today": sorted(today_stats.items(), key=lambda x: x[1], reverse=True)[:10],
+            "limits": {
+                "daily_limit": DAILY_LIMIT,
+                "rate_limit": RATE_LIMIT,
+                "abuse_threshold": ABUSE_THRESHOLD
+            }
+        }
+
+@app.post("/admin/unblock/{ip}")
+async def unblock_ip(ip: str, request: Request):
+    """Admin endpoint to unblock an IP address"""
+    admin_key = request.headers.get("X-Admin-Key")
+    if admin_key != os.environ.get("ADMIN_KEY", "pixgone-admin-2024"):
+        raise HTTPException(status_code=403, detail="Unauthorized")
+    
+    with storage_lock:
+        if ip in blocked_ips:
+            blocked_ips.remove(ip)
+            return {"message": f"IP {ip} has been unblocked"}
+        else:
+            return {"message": f"IP {ip} was not blocked"}
+
 @app.on_event("startup")
 async def startup_event():
     asyncio.create_task(cleanup_old_videos())
     
+    # Clean up old request tracking data daily
+    async def daily_cleanup():
+        while True:
+            await asyncio.sleep(24 * 60 * 60)  # Run every 24 hours
+            cleanup_old_requests()
+    
+    asyncio.create_task(daily_cleanup())
+    print(f"✅ Rate limiting configured: {DAILY_LIMIT} requests/day, {RATE_LIMIT}")
+    print(f"✅ Railway cost monitoring enabled: {bool(RAILWAY_API_TOKEN and RAILWAY_PROJECT_ID)}")
+
 async def fetch_railway_usage() -> Optional[dict]:
     """Fetch current Railway project usage via GraphQL API"""
     if not RAILWAY_API_TOKEN or not RAILWAY_PROJECT_ID:
