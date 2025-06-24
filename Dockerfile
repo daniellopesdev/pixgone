@@ -20,5 +20,5 @@ EXPOSE 8080
 # Set environment variable
 ENV PORT=8080
 
-# Start the server
-CMD ["python", "server_ormbg_only.py"] 
+# Start the unified server with cost monitoring
+CMD ["python", "server.py"] 
