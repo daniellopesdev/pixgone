@@ -82,22 +82,6 @@ We welcome contributions! Here's how you can help:
 
 *Benchmarks on Railway Pro plan with GPU acceleration*
 
-## 🔗 Links & Resources
-
-### **🌐 Live Services**
-- [🎨 Live Demo](https://your-frontend-url.railway.app) - Try it now
-- [📊 API Status](https://your-backend-url.railway.app/docs) - OpenAPI docs
-- [💰 Cost Monitor](https://your-frontend-url.railway.app) - Real-time costs
-
-### **📖 Documentation**
-- [🚄 Railway Setup Guide](RAILWAY_SETUP.md) - Deployment guide
-- [🔧 API Documentation](https://your-backend-url.railway.app/docs) - Technical reference
-- [🐛 Issues](https://github.com/daniellopesdev/pixgone/issues) - Bug reports & features
-
-### **💬 Community**
-- [💝 Support Project](https://ko-fi.com/daniellopesdev) - Buy me a coffee
-- [⭐ GitHub](https://github.com/daniellopesdev/pixgone) - Star the repository
-- [🐦 Twitter](https://twitter.com/daniellopesdev) - Follow for updates
 
 ## 📄 License
 
