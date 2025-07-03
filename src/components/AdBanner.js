@@ -11,8 +11,6 @@ const PLACEHOLDER_SLOTS = [
 ];
 
 const AdBanner = ({ adSlot, adFormat = 'auto', style = {} }) => {
-  if (PLACEHOLDER_SLOTS.includes(adSlot)) return null;
-
   const adRef = useRef(null);
 
   useEffect(() => {
@@ -40,7 +38,6 @@ const AdBanner = ({ adSlot, adFormat = 'auto', style = {} }) => {
       }
     };
 
-    // Initial load attempt
     loadAd();
 
     // Cleanup
@@ -48,6 +45,8 @@ const AdBanner = ({ adSlot, adFormat = 'auto', style = {} }) => {
       // Cleanup if needed
     };
   }, [adSlot, adFormat]);
+
+  if (PLACEHOLDER_SLOTS.includes(adSlot)) return null;
 
   return (
     <div className="ad-banner" style={style}>
