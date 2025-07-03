@@ -460,6 +460,11 @@ function App() {
     ) : null
   );
 
+  // Define your real ad slots at the top of the component
+  const TOP_AD_SLOT = process.env.REACT_APP_TOP_AD_SLOT;
+  const SIDEBAR_AD_SLOT = process.env.REACT_APP_SIDEBAR_AD_SLOT;
+  const BOTTOM_AD_SLOT = process.env.REACT_APP_BOTTOM_AD_SLOT;
+
   return (
     <div className="App">
       <AdblockModal open={adblockOpen} onBypass={bypassAdblockDetection} />
@@ -503,13 +508,48 @@ function App() {
           </div>
 
           {/* Top Ad Space - Strategic placement after hero */}
-          <div className="ad-section top-ad">
-            <AdBanner adSlot="YOUR_TOP_AD_SLOT" />
-          </div>
+          {TOP_AD_SLOT && !['', 'YOUR_TOP_AD_SLOT'].includes(TOP_AD_SLOT) && (
+            <div className="ad-section top-ad">
+              <AdBanner adSlot={TOP_AD_SLOT} />
+            </div>
+          )}
 
-          {/* Usage and Features Info - Content Boost */}
-          <UsageInfo />
-          <FeaturesInfo />
+          {/* Features Section - Usage and Key Features merged */}
+          <div className="features-section">
+            <h2 className="features-title">Why Choose pixGone?</h2>
+            <div className="features-grid">
+              <div className="feature-card">
+                <div className="feature-icon">🎯</div>
+                <h3 className="feature-name">High-Quality AI</h3>
+                <p className="feature-description">Advanced background removal with multiple AI models for accurate, fast results.</p>
+              </div>
+              <div className="feature-card">
+                <div className="feature-icon">🔒</div>
+                <h3 className="feature-name">Privacy Focused</h3>
+                <p className="feature-description">No data storage—your images stay private and are never saved.</p>
+              </div>
+              <div className="feature-card">
+                <div className="feature-icon">💰</div>
+                <h3 className="feature-name">Transparent & Free</h3>
+                <p className="feature-description">Free to use with full cost transparency. No paywalls or subscriptions.</p>
+              </div>
+              <div className="feature-card">
+                <div className="feature-icon">🌐</div>
+                <h3 className="feature-name">Community Powered</h3>
+                <p className="feature-description">Built for the community, by the community. Open and accessible to all.</p>
+              </div>
+            </div>
+            <div className="usage-section" style={{marginTop: '2em'}}>
+              <h3>How to Use PixGone</h3>
+              <ol>
+                <li>Upload your image (JPG, PNG, or WEBP).</li>
+                <li>Let the AI work its magic – this may take a few moments.</li>
+                <li>Export the result as a PNG with transparent background.</li>
+                <li>Test different background colors to preview your result.</li>
+              </ol>
+              <p style={{fontSize: '0.95em', color: '#666'}}>No sign-up required. All processing is done securely and privately.</p>
+            </div>
+          </div>
 
           {/* Main Content Grid */}
           <div className="main-grid">
@@ -727,45 +767,26 @@ function App() {
               </div>
 
               {/* Sidebar Ad Space */}
-              <div className="ad-section sidebar-ad">
-                <AdBanner adSlot="YOUR_SIDEBAR_AD_SLOT" />
-              </div>
-            </div>
-          </div>
-
-          {/* Features Section - Highlight Cards */}
-          <div className="features-section">
-            <h2 className="features-title">Why Choose pixGone?</h2>
-            <div className="features-grid">
-              <div className="feature-card">
-                <div className="feature-icon">🎯</div>
-                <h3 className="feature-name">High-Quality AI</h3>
-                <p className="feature-description">Advanced background removal with multiple AI models</p>
-              </div>
-              <div className="feature-card">
-                <div className="feature-icon">🔒</div>
-                <h3 className="feature-name">Privacy Focused</h3>
-                <p className="feature-description">No data storage, your images stay private</p>
-              </div>
-              <div className="feature-card">
-                <div className="feature-icon">💰</div>
-                <h3 className="feature-name">Transparent Costs</h3>
-                <p className="feature-description">Free to use with full cost transparency</p>
-              </div>
+              {SIDEBAR_AD_SLOT && !['', 'YOUR_SIDEBAR_AD_SLOT'].includes(SIDEBAR_AD_SLOT) && (
+                <div className="ad-section sidebar-ad">
+                  <AdBanner adSlot={SIDEBAR_AD_SLOT} />
+                </div>
+              )}
             </div>
           </div>
 
           {/* Ad Spaces */}
-          <div className="ad-section bottom-ad">
-            <AdBanner adSlot="YOUR_BOTTOM_AD_SLOT" />
-          </div>
+          {BOTTOM_AD_SLOT && !['', 'YOUR_BOTTOM_AD_SLOT'].includes(BOTTOM_AD_SLOT) && (
+            <div className="ad-section bottom-ad">
+              <AdBanner adSlot={BOTTOM_AD_SLOT} />
+            </div>
+          )}
+              {/* Informational Block: About Background Removal */}
+      <BackgroundRemovalInfo />
         </div>
       </main>
 
       <Footer />
-
-      {/* Informational Block: About Background Removal */}
-      <BackgroundRemovalInfo />
 
       <ImagePreviewModal />
       
