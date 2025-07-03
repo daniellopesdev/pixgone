@@ -1,7 +1,18 @@
 import React, { useEffect, useRef } from 'react';
 import './AdBanner.css';
 
+const PLACEHOLDER_SLOTS = [
+  '',
+  undefined,
+  null,
+  'YOUR_TOP_AD_SLOT',
+  'YOUR_SIDEBAR_AD_SLOT',
+  'YOUR_BOTTOM_AD_SLOT',
+];
+
 const AdBanner = ({ adSlot, adFormat = 'auto', style = {} }) => {
+  if (PLACEHOLDER_SLOTS.includes(adSlot)) return null;
+
   const adRef = useRef(null);
 
   useEffect(() => {

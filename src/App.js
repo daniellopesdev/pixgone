@@ -7,6 +7,9 @@ import CostMonitor from './components/CostMonitor';
 import DonationStats from './components/DonationStats';
 import DonateButton from './components/DonateButton';
 import KofiWidgetEnhanced from './components/KofiWidgetEnhanced';
+import FeaturesInfo from './components/FeaturesInfo';
+import UsageInfo from './components/UsageInfo';
+import BackgroundRemovalInfo from './components/BackgroundRemovalInfo';
 import './App.css';
 
 const AdblockModal = ({ open, onBypass }) => (
@@ -504,6 +507,10 @@ function App() {
             <AdBanner adSlot="YOUR_TOP_AD_SLOT" />
           </div>
 
+          {/* Usage and Features Info - Content Boost */}
+          <UsageInfo />
+          <FeaturesInfo />
+
           {/* Main Content Grid */}
           <div className="main-grid">
             {/* Left Column - Upload/Processing */}
@@ -756,6 +763,9 @@ function App() {
       </main>
 
       <Footer />
+
+      {/* Informational Block: About Background Removal */}
+      <BackgroundRemovalInfo />
 
       <ImagePreviewModal />
       
