@@ -514,43 +514,6 @@ function App() {
             </div>
           )}
 
-          {/* Features Section - Usage and Key Features merged */}
-          <div className="features-section">
-            <h2 className="features-title">Why Choose pixGone?</h2>
-            <div className="features-grid">
-              <div className="feature-card">
-                <div className="feature-icon">🎯</div>
-                <h3 className="feature-name">High-Quality AI</h3>
-                <p className="feature-description">Advanced background removal with multiple AI models for accurate, fast results.</p>
-              </div>
-              <div className="feature-card">
-                <div className="feature-icon">🔒</div>
-                <h3 className="feature-name">Privacy Focused</h3>
-                <p className="feature-description">No data storage—your images stay private and are never saved.</p>
-              </div>
-              <div className="feature-card">
-                <div className="feature-icon">💰</div>
-                <h3 className="feature-name">Transparent & Free</h3>
-                <p className="feature-description">Free to use with full cost transparency. No paywalls or subscriptions.</p>
-              </div>
-              <div className="feature-card">
-                <div className="feature-icon">🌐</div>
-                <h3 className="feature-name">Community Powered</h3>
-                <p className="feature-description">Built for the community, by the community. Open and accessible to all.</p>
-              </div>
-            </div>
-            <div className="usage-section" style={{marginTop: '2em'}}>
-              <h3>How to Use PixGone</h3>
-              <ol>
-                <li>Upload your image (JPG, PNG, or WEBP).</li>
-                <li>Let the AI work its magic – this may take a few moments.</li>
-                <li>Export the result as a PNG with transparent background.</li>
-                <li>Test different background colors to preview your result.</li>
-              </ol>
-              <p style={{fontSize: '0.95em', color: '#666'}}>No sign-up required. All processing is done securely and privately.</p>
-            </div>
-          </div>
-
           {/* Main Content Grid */}
           <div className="main-grid">
             {/* Left Column - Upload/Processing */}
@@ -772,6 +735,43 @@ function App() {
                   <AdBanner adSlot={SIDEBAR_AD_SLOT} />
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* Features Section - Usage and Key Features merged, now below main content */}
+          <div className="features-section sleek-features-section">
+            <h2 className="features-title">Why Choose pixGone?</h2>
+            <div className="features-grid">
+              <div className="feature-card">
+                <div className="feature-icon">🎯</div>
+                <h3 className="feature-name">High-Quality AI</h3>
+                <p className="feature-description">Advanced background removal with multiple AI models for accurate, fast results.</p>
+              </div>
+              <div className="feature-card">
+                <div className="feature-icon">🔒</div>
+                <h3 className="feature-name">Privacy Focused</h3>
+                <p className="feature-description">No data storage—your images stay private and are never saved.</p>
+              </div>
+              <div className="feature-card">
+                <div className="feature-icon">💰</div>
+                <h3 className="feature-name">Transparent & Free</h3>
+                <p className="feature-description">Free to use with full cost transparency. No paywalls or subscriptions.</p>
+              </div>
+              <div className="feature-card">
+                <div className="feature-icon">🌐</div>
+                <h3 className="feature-name">Community Powered</h3>
+                <p className="feature-description">Built for the community, by the community. Open and accessible to all.</p>
+              </div>
+            </div>
+            <div className="usage-section" style={{marginTop: '2em'}}>
+              <h3>How to Use PixGone</h3>
+              <ol>
+                <li>Upload your image (JPG, PNG, or WEBP).</li>
+                <li>Let the AI work its magic – this may take a few moments.</li>
+                <li>Export the result as a PNG with transparent background.</li>
+                <li>Test different background colors to preview your result.</li>
+              </ol>
+              <p style={{fontSize: '0.95em', color: '#666'}}>No sign-up required. All processing is done securely and privately.</p>
             </div>
           </div>
 
