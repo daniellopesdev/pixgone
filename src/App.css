@@ -1506,3 +1506,119 @@
   }
 }
 
+/* Affiliate Links Section */
+.affiliate-section {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e2e8f0;
+  margin-top: 1.5rem;
+}
+
+.affiliate-section h4 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 0.75rem 0;
+}
+
+.disclosure {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-style: italic;
+  margin: 0 0 1rem 0;
+  padding: 0.5rem;
+  background: #f8fafc;
+  border-radius: 6px;
+  border-left: 3px solid #3b82f6;
+}
+
+.affiliate-button {
+  display: inline-block;
+  background: linear-gradient(135deg, #ff9900 0%, #ff8800 100%);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(255, 153, 0, 0.2);
+}
+
+.affiliate-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(255, 153, 0, 0.3);
+  color: white;
+  text-decoration: none;
+}
+
+.product-recommendations {
+  background: linear-gradient(135deg, #fef7e0 0%, #fef3c7 100%);
+  border-radius: 16px;
+  padding: 2rem;
+  margin: 2rem 0;
+  border: 1px solid #f59e0b;
+}
+
+.product-recommendations h3 {
+  color: #92400e;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 1rem 0;
+}
+
+.product-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.product-card h4 {
+  color: #1e293b;
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+}
+
+.affiliate-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #ff9900;
+  color: white;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+}
+
+.affiliate-link:hover {
+  background: #ff8800;
+  transform: translateY(-1px);
+  color: white;
+  text-decoration: none;
+}
+
+/* Responsive affiliate sections */
+@media (max-width: 768px) {
+  .affiliate-section {
+    padding: 1rem;
+    margin-top: 1rem;
+  }
+  
+  .product-recommendations {
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+  }
+  
+  .product-card {
+    padding: 1rem;
+  }
+}
+

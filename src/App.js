@@ -10,6 +10,7 @@ import KofiWidgetEnhanced from './components/KofiWidgetEnhanced';
 import FeaturesInfo from './components/FeaturesInfo';
 import UsageInfo from './components/UsageInfo';
 import BackgroundRemovalInfo from './components/BackgroundRemovalInfo';
+import RecommendedProductBanner from './components/RecommendedProductBanner';
 import './App.css';
 
 const AdblockModal = ({ open, onBypass }) => (
@@ -508,9 +509,13 @@ function App() {
           </div>
 
           {/* Top Ad Space - Strategic placement after hero */}
-          {TOP_AD_SLOT && !['', 'YOUR_TOP_AD_SLOT'].includes(TOP_AD_SLOT) && (
+          {TOP_AD_SLOT && !['', 'YOUR_TOP_AD_SLOT'].includes(TOP_AD_SLOT) ? (
             <div className="ad-section top-ad">
               <AdBanner adSlot={TOP_AD_SLOT} />
+            </div>
+          ) : (
+            <div className="ad-section top-ad">
+              <RecommendedProductBanner />
             </div>
           )}
 
@@ -730,9 +735,13 @@ function App() {
               </div>
 
               {/* Sidebar Ad Space */}
-              {SIDEBAR_AD_SLOT && !['', 'YOUR_SIDEBAR_AD_SLOT'].includes(SIDEBAR_AD_SLOT) && (
+              {SIDEBAR_AD_SLOT && !['', 'YOUR_SIDEBAR_AD_SLOT'].includes(SIDEBAR_AD_SLOT) ? (
                 <div className="ad-section sidebar-ad">
                   <AdBanner adSlot={SIDEBAR_AD_SLOT} />
+                </div>
+              ) : (
+                <div className="ad-section sidebar-ad">
+                  <RecommendedProductBanner />
                 </div>
               )}
             </div>
@@ -776,9 +785,13 @@ function App() {
           </div>
 
           {/* Ad Spaces */}
-          {BOTTOM_AD_SLOT && !['', 'YOUR_BOTTOM_AD_SLOT'].includes(BOTTOM_AD_SLOT) && (
+          {BOTTOM_AD_SLOT && !['', 'YOUR_BOTTOM_AD_SLOT'].includes(BOTTOM_AD_SLOT) ? (
             <div className="ad-section bottom-ad">
               <AdBanner adSlot={BOTTOM_AD_SLOT} />
+            </div>
+          ) : (
+            <div className="ad-section bottom-ad">
+              <RecommendedProductBanner />
             </div>
           )}
               {/* Informational Block: About Background Removal */}
