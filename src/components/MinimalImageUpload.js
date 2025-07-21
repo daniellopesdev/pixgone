@@ -16,7 +16,6 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import axios from 'axios';
-import { ResponsiveAd, BannerAd } from './AdBanner';
 
 const MinimalImageUpload = ({ showErrorToast }) => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -131,7 +130,6 @@ const MinimalImageUpload = ({ showErrorToast }) => {
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       {/* Top Banner Ad */}
-      <ResponsiveAd slot="TOP_BANNER_SLOT" />
       
       {/* Header */}
       <Box sx={{ textAlign: 'center', mb: 4 }}>
@@ -375,7 +373,7 @@ const MinimalImageUpload = ({ showErrorToast }) => {
 
               {/* Middle Banner Ad */}
               <Box sx={{ my: 4 }}>
-                <BannerAd slot="MIDDLE_BANNER_SLOT" />
+                
               </Box>
             </Box>
           </Slide>
@@ -426,7 +424,7 @@ const MinimalImageUpload = ({ showErrorToast }) => {
         </Box>
 
         {/* Bottom Banner Ad */}
-        <ResponsiveAd slot="BOTTOM_BANNER_SLOT" />
+        
       </Box>
     </Container>
   );

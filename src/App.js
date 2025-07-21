@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import ColorPicker from './components/ColorPicker';
-import AdBanner from './components/AdBanner';
 import CostMonitor from './components/CostMonitor';
 import DonationStats from './components/DonationStats';
 import DonateButton from './components/DonateButton';
@@ -10,7 +9,6 @@ import KofiWidgetEnhanced from './components/KofiWidgetEnhanced';
 import FeaturesInfo from './components/FeaturesInfo';
 import UsageInfo from './components/UsageInfo';
 import BackgroundRemovalInfo from './components/BackgroundRemovalInfo';
-import RecommendedProductBanner from './components/RecommendedProductBanner';
 import './App.css';
 
 const AdblockModal = ({ open, onBypass }) => (
@@ -511,13 +509,9 @@ function App() {
           {/* Top Ad Space - Strategic placement after hero */}
           {TOP_AD_SLOT && !['', 'YOUR_TOP_AD_SLOT'].includes(TOP_AD_SLOT) ? (
             <div className="ad-section top-ad">
-              <AdBanner adSlot={TOP_AD_SLOT} />
+              {/* AdBanner component was removed, so this will be empty or a placeholder */}
             </div>
-          ) : (
-            <div className="ad-section top-ad">
-              <RecommendedProductBanner />
-            </div>
-          )}
+          ) : null}
 
           {/* Main Content Grid */}
           <div className="main-grid">
@@ -737,13 +731,9 @@ function App() {
               {/* Sidebar Ad Space */}
               {SIDEBAR_AD_SLOT && !['', 'YOUR_SIDEBAR_AD_SLOT'].includes(SIDEBAR_AD_SLOT) ? (
                 <div className="ad-section sidebar-ad">
-                  <AdBanner adSlot={SIDEBAR_AD_SLOT} />
+                  {/* AdBanner component was removed, so this will be empty or a placeholder */}
                 </div>
-              ) : (
-                <div className="ad-section sidebar-ad">
-                  <RecommendedProductBanner />
-                </div>
-              )}
+              ) : null}
             </div>
           </div>
 
@@ -787,13 +777,9 @@ function App() {
           {/* Ad Spaces */}
           {BOTTOM_AD_SLOT && !['', 'YOUR_BOTTOM_AD_SLOT'].includes(BOTTOM_AD_SLOT) ? (
             <div className="ad-section bottom-ad">
-              <AdBanner adSlot={BOTTOM_AD_SLOT} />
+              {/* AdBanner component was removed, so this will be empty or a placeholder */}
             </div>
-          ) : (
-            <div className="ad-section bottom-ad">
-              <RecommendedProductBanner />
-            </div>
-          )}
+          ) : null}
               {/* Informational Block: About Background Removal */}
       <BackgroundRemovalInfo />
         </div>

@@ -15,7 +15,6 @@ import DownloadIcon from '@mui/icons-material/Download';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import axios from 'axios';
-import AdBanner from './AdBanner';
 
 const WebMinimalImageUpload = ({ showErrorToast }) => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -121,11 +120,11 @@ const WebMinimalImageUpload = ({ showErrorToast }) => {
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       {/* Top Banner Ad */}
-      <AdBanner 
+      {/* <AdBanner 
         slot="top-banner"
         format="horizontal"
         style={{ mb: 4 }}
-      />
+      /> */}
 
       <Box sx={{ maxWidth: 900, mx: 'auto' }}>
         {/* Header */}
@@ -358,10 +357,10 @@ const WebMinimalImageUpload = ({ showErrorToast }) => {
               {/* Bottom Ad - After Results */}
               {processedFile && (
                 <Box sx={{ mt: 4 }}>
-                  <AdBanner 
+                  {/* <AdBanner 
                     slot="bottom-results"
                     format="horizontal"
-                  />
+                  /> */}
                 </Box>
               )}
             </Box>
@@ -370,10 +369,10 @@ const WebMinimalImageUpload = ({ showErrorToast }) => {
 
         {/* Bottom Banner Ad */}
         <Box sx={{ mt: 6 }}>
-          <AdBanner 
+          {/* <AdBanner 
             slot="bottom-banner"
             format="horizontal"
-          />
+          /> */}
         </Box>
 
         {/* Features Section */}
