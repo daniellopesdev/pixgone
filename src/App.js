@@ -6,32 +6,8 @@ import CostMonitor from './components/CostMonitor';
 import DonationStats from './components/DonationStats';
 import DonateButton from './components/DonateButton';
 import KofiWidgetEnhanced from './components/KofiWidgetEnhanced';
-import FeaturesInfo from './components/FeaturesInfo';
-import UsageInfo from './components/UsageInfo';
 import BackgroundRemovalInfo from './components/BackgroundRemovalInfo';
 import './App.css';
-
-const AdblockModal = ({ open, onBypass }) => (
-  open ? (
-    <div className="adblock-modal-overlay" id="adblock-overlay">
-      <div className="adblock-modal" id="adblock-modal">
-        <div className="adblock-emoji">🦄🚫</div>
-        <h2>AdBlock Detected!</h2>
-        <p>
-          Hey! Please disable your ad blocker to use <b>pixGone</b>.<br />
-          We only show a few ads to keep it free.<br />
-          <small>Refresh the page after disabling AdBlock.</small>
-        </p>
-        <div className="adblock-actions">
-          <button className="bypass-btn" onClick={onBypass}>
-            Continue Anyway
-          </button>
-          <small>Click if you believe this is an error</small>
-        </div>
-      </div>
-    </div>
-  ) : null
-);
 
 function DonateModal({ open, onClose }) {
   if (!open) return null;
@@ -64,8 +40,6 @@ function App() {
   const [error, setError] = useState('');
   const [backgroundColor, setBackgroundColor] = useState('#ffffff');
   const [showStuckMsg, setShowStuckMsg] = useState(false);
-  const [adblockOpen, setAdblockOpen] = useState(false);
-  const [adblockDetected, setAdblockDetected] = useState(false);
   const [rateLimitInfo, setRateLimitInfo] = useState(null);
   const [rateLimitError, setRateLimitError] = useState(null);
   const [currentMessage, setCurrentMessage] = useState('');
@@ -76,7 +50,6 @@ function App() {
   const fileInputRef = useRef(null);
   const progressInterval = useRef(null);
   const stuckTimeout = useRef(null);
-  const detectionInterval = useRef(null);
   const mutationObserver = useRef(null);
 
   // Funny waiting messages
@@ -107,117 +80,6 @@ function App() {
     "🌈 Creating transparency magic...",
     "🎪 The AI circus is in town!"
   ];
-
-  // Simple and reliable AdBlock detection
-  useEffect(() => {
-    let detectionTimeout;
-    
-    const detectAdBlock = () => {
-      // Check if user has recently bypassed detection
-      const bypassTime = localStorage.getItem('pixgone-adblock-bypass');
-      if (bypassTime) {
-        const timeSince = Date.now() - parseInt(bypassTime);
-        // Bypass lasts for 24 hours
-        if (timeSince < 24 * 60 * 60 * 1000) {
-          setAdblockDetected(false);
-          setAdblockOpen(false);
-          console.log('AdBlock detection bypassed - skipping');
-          return;
-        }
-      }
-
-      // Only detect if ads are actually supposed to be there
-      const adElements = document.querySelectorAll('.ad-section, .ad-placeholder, [class*="ad-"]');
-      
-      if (adElements.length === 0) {
-        // No ads to check, don't block
-        setAdblockDetected(false);
-        setAdblockOpen(false);
-        return;
-      }
-
-      // Create a simple test element
-      const testAd = document.createElement('div');
-      testAd.className = 'ad-test-element';
-      testAd.style.cssText = `
-        position: absolute !important;
-        left: -9999px !important;
-        width: 1px !important;
-        height: 1px !important;
-        background: url('data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7') !important;
-      `;
-      testAd.innerHTML = '<ins class="adsbygoogle" style="display:block;width:1px;height:1px;"></ins>';
-      
-      document.body.appendChild(testAd);
-      
-      // Check after a short delay
-      setTimeout(() => {
-        const isHidden = testAd.offsetHeight === 0 || 
-                       testAd.offsetWidth === 0 ||
-                       window.getComputedStyle(testAd).display === 'none' ||
-                       window.getComputedStyle(testAd).visibility === 'hidden';
-        
-        // Also check for common AdBlock indicators
-        const hasAdBlockSignatures = (
-          typeof window.uBlock !== 'undefined' ||
-          typeof window.AdBlocker !== 'undefined' ||
-          document.querySelector('.adblock-detected') !== null
-        );
-        
-        // Clean up test element
-        if (testAd.parentNode) {
-          testAd.parentNode.removeChild(testAd);
-        }
-        
-        // Only block if we have strong evidence
-        const shouldBlock = (isHidden && hasAdBlockSignatures) || 
-                           (window.location.hostname !== 'localhost' && isHidden);
-        
-        if (shouldBlock) {
-          console.log('AdBlock detected - blocking access');
-          setAdblockDetected(true);
-          setAdblockOpen(true);
-        } else {
-          setAdblockDetected(false);
-          setAdblockOpen(false);
-        }
-      }, 200);
-    };
-
-    // Only run detection in production or when ads are present
-    if (process.env.NODE_ENV === 'production' || window.location.hostname !== 'localhost') {
-      detectionTimeout = setTimeout(detectAdBlock, 2000);
-    } else {
-      // In development, don't block
-      setAdblockDetected(false);
-      setAdblockOpen(false);
-    }
-
-    return () => {
-      if (detectionTimeout) {
-        clearTimeout(detectionTimeout);
-      }
-      if (detectionInterval.current) {
-        clearInterval(detectionInterval.current);
-      }
-      if (mutationObserver.current) {
-        mutationObserver.current.disconnect();
-      }
-    };
-  }, []);
-
-  // Simplified monitoring - only if actually blocked
-  const startContinuousMonitoring = () => {
-    detectionInterval.current = setInterval(() => {
-      const overlay = document.getElementById('adblock-overlay');
-      const modal = document.getElementById('adblock-modal');
-      
-      if (!overlay || !modal || overlay.style.display === 'none' || modal.style.display === 'none') {
-        setAdblockOpen(true);
-        setAdblockDetected(true);
-      }
-    }, 5000); // Check less frequently
-  };
 
   // Progress stuck message
   useEffect(() => {
@@ -399,14 +261,6 @@ function App() {
     }
   };
 
-  // Bypass function for false positives
-  const bypassAdblockDetection = () => {
-    setAdblockDetected(false);
-    setAdblockOpen(false);
-    localStorage.setItem('pixgone-adblock-bypass', Date.now().toString());
-    console.log('AdBlock detection bypassed by user');
-  };
-
   // Image Preview Modal Component
   const ImagePreviewModal = () => (
     showPreviewModal && processedImage ? (
@@ -459,14 +313,8 @@ function App() {
     ) : null
   );
 
-  // Define your real ad slots at the top of the component
-  const TOP_AD_SLOT = process.env.REACT_APP_TOP_AD_SLOT;
-  const SIDEBAR_AD_SLOT = process.env.REACT_APP_SIDEBAR_AD_SLOT;
-  const BOTTOM_AD_SLOT = process.env.REACT_APP_BOTTOM_AD_SLOT;
-
   return (
     <div className="App">
-      <AdblockModal open={adblockOpen} onBypass={bypassAdblockDetection} />
       <Header onDonateClick={() => setDonateModalOpen(true)} />
 
       <main className="main-content">
@@ -505,13 +353,6 @@ function App() {
               })}
             </div>
           </div>
-
-          {/* Top Ad Space - Strategic placement after hero */}
-          {TOP_AD_SLOT && !['', 'YOUR_TOP_AD_SLOT'].includes(TOP_AD_SLOT) ? (
-            <div className="ad-section top-ad">
-              {/* AdBanner component was removed, so this will be empty or a placeholder */}
-            </div>
-          ) : null}
 
           {/* Main Content Grid */}
           <div className="main-grid">
@@ -728,12 +569,6 @@ function App() {
                 </div>
               </div>
 
-              {/* Sidebar Ad Space */}
-              {SIDEBAR_AD_SLOT && !['', 'YOUR_SIDEBAR_AD_SLOT'].includes(SIDEBAR_AD_SLOT) ? (
-                <div className="ad-section sidebar-ad">
-                  {/* AdBanner component was removed, so this will be empty or a placeholder */}
-                </div>
-              ) : null}
             </div>
           </div>
 
@@ -774,14 +609,8 @@ function App() {
             </div>
           </div>
 
-          {/* Ad Spaces */}
-          {BOTTOM_AD_SLOT && !['', 'YOUR_BOTTOM_AD_SLOT'].includes(BOTTOM_AD_SLOT) ? (
-            <div className="ad-section bottom-ad">
-              {/* AdBanner component was removed, so this will be empty or a placeholder */}
-            </div>
-          ) : null}
-              {/* Informational Block: About Background Removal */}
-      <BackgroundRemovalInfo />
+          {/* Informational Block: About Background Removal */}
+          <BackgroundRemovalInfo />
         </div>
       </main>
 

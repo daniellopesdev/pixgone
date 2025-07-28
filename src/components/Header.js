@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import DonateButton from './DonateButton';
-import './Header.css';
+import React, { useState, useEffect } from "react";
+import DonateButton from "./DonateButton";
+import "./Header.css";
 
 const Header = ({ onDonateClick }) => {
   const [appStatus, setAppStatus] = useState(null);
@@ -8,13 +8,18 @@ const Header = ({ onDonateClick }) => {
   useEffect(() => {
     const fetchAppStatus = async () => {
       try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL || 'https://pixgone-production.up.railway.app'}/api/app-status`);
+        const response = await fetch(
+          `${
+            process.env.REACT_APP_API_URL ||
+            "https://pixgone-production.up.railway.app"
+          }/api/app-status`
+        );
         if (response.ok) {
           const status = await response.json();
           setAppStatus(status);
         }
       } catch (err) {
-        console.error('Error fetching app status:', err);
+        console.error("Error fetching app status:", err);
       }
     };
 
@@ -26,7 +31,11 @@ const Header = ({ onDonateClick }) => {
 
   const handleGitHub = () => {
     // ⭐ GitHub repository link
-    window.open('https://github.com/daniellopesdev/pixgone', '_blank', 'noopener,noreferrer');
+    window.open(
+      "https://github.com/daniellopesdev/pixgone",
+      "_blank",
+      "noopener,noreferrer"
+    );
   };
 
   return (
@@ -34,23 +43,19 @@ const Header = ({ onDonateClick }) => {
       <div className="header-container">
         {/* Logo Section */}
         <div className="logo-section">
-          <img src={process.env.PUBLIC_URL + '/logoPix.png'} alt="pixGone logo" className="logo-img" />
+          <img
+            src={process.env.PUBLIC_URL + "/logoPix.png"}
+            alt="pixGone logo"
+            className="logo-img"
+          />
         </div>
 
         {/* Navigation Section */}
         <nav className="header-nav">
           <div className="nav-buttons">
-            <button 
-              className="nav-btn github-btn" 
-              onClick={handleGitHub}
-              title="View source code"
-            >
-              <span className="btn-text">GitHub</span>
-            </button>
-            
-            <DonateButton 
-              variant="header" 
-              size="small" 
+            <DonateButton
+              variant="header"
+              size="small"
               appStatus={appStatus}
               showWhenDisabled={true}
               onClick={onDonateClick}
@@ -62,4 +67,4 @@ const Header = ({ onDonateClick }) => {
   );
 };
 
-export default Header; 
+export default Header;

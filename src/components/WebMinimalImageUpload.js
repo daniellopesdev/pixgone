@@ -119,13 +119,6 @@ const WebMinimalImageUpload = ({ showErrorToast }) => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      {/* Top Banner Ad */}
-      {/* <AdBanner 
-        slot="top-banner"
-        format="horizontal"
-        style={{ mb: 4 }}
-      /> */}
-
       <Box sx={{ maxWidth: 900, mx: 'auto' }}>
         {/* Header */}
         <Box sx={{ textAlign: 'center', mb: 4 }}>
@@ -354,26 +347,9 @@ const WebMinimalImageUpload = ({ showErrorToast }) => {
                 </Box>
               </Paper>
 
-              {/* Bottom Ad - After Results */}
-              {processedFile && (
-                <Box sx={{ mt: 4 }}>
-                  {/* <AdBanner 
-                    slot="bottom-results"
-                    format="horizontal"
-                  /> */}
-                </Box>
-              )}
             </Box>
           </Slide>
         )}
-
-        {/* Bottom Banner Ad */}
-        <Box sx={{ mt: 6 }}>
-          {/* <AdBanner 
-            slot="bottom-banner"
-            format="horizontal"
-          /> */}
-        </Box>
 
         {/* Features Section */}
         <Box sx={{ mt: 6, textAlign: 'center' }}>
